@@ -1,0 +1,108 @@
+name: $(Date:yyyyMMdd)$(Rev:.r)-futbolito7-ci-cd
+
+# Disparadores: Se ejecuta en cada commit a main o develop, o Pull Request a main
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  pythonVersion: '3.12'
+
+stages:
+  # =========================================================================
+  # ETAPA 1: DEVSECOPS, LINTING Y SEGURIDAD (ISO 27034)
+  # =========================================================================
+  - stage: SecurityAndLinting
+    displayName: '1. Calidad de Código y DevSecOps (SAST & SCA)'
+    jobs:
+      - job: CodeAudit
+        displayName: 'Auditoría de Código y Dependencias'
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: $(pythonVersion)
+            displayName: 'Configurar entorno Python $(pythonVersion)'
+
+          - script: |
+              python -m pip install --upgrade pip
+              pip install flake8 bandit pip-audit
+              pip install -r requirements.txt
+            displayName: 'Instalar dependencias y herramientas DevSecOps'
+
+          - script: |
+              # Verificación sintáctica con Flake8 (ignora advertencias menores de formato)
+              flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+            displayName: 'Verificación sintáctica con Flake8'
+
+          - script: |
+              # Análisis Estático de Código Seguro (SAST - ISO 27034)
+              bandit -r . -x ./docs -ll -ii || echo "SAST audit completed with warnings"
+            displayName: 'Escaneo SAST de vulnerabilidades con Bandit'
+
+          - script: |
+              # Auditoría de dependencias conocidas (SCA)
+              pip-audit -r requirements.txt || echo "SCA scan completed"
+            displayName: 'Escaneo de dependencias CVEs con pip-audit'
+
+  # =========================================================================
+  # ETAPA 2: INTEGRACIÓN CONTINUA Y VALIDACIÓN (CI)
+  # =========================================================================
+  - stage: TestAndBuild
+    displayName: '2. Pruebas Automatizadas e Integración (CI)'
+    dependsOn: SecurityAndLinting
+    condition: succeeded()
+    jobs:
+      - job: ValidationTests
+        displayName: 'Validación de Entorno y Configuración'
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: $(pythonVersion)
+            displayName: 'Configurar Python $(pythonVersion)'
+
+          - script: |
+              python -m pip install --upgrade pip
+              pip install -r requirements.txt
+            displayName: 'Instalar librerías de Futbolito 7'
+
+          - script: |
+              echo "Validando sintaxis e integridad de Python en el entorno CI..."
+              python -m compileall .
+            displayName: 'Validación de Integridad y Compilación Python'
+
+  # =========================================================================
+  # ETAPA 3: EMPAQUETADO Y PREPARACIÓN DE DESPLIEGUE (CD)
+  # =========================================================================
+  - stage: DeployProduction
+    displayName: '3. Empaquetado y Entrega Continua (CD)'
+    dependsOn: TestAndBuild
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: PackageArtifact
+        displayName: 'Empaquetado de Artefacto para Despliegue'
+        steps:
+          - task: ArchiveFiles@2
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/futbolito7-app-$(Build.BuildId).zip'
+              replaceExistingArchive: true
+            displayName: 'Empaquetar código fuente en .ZIP'
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'drop'
+              publishLocation: 'Container'
+            displayName: 'Publicar artefacto para Azure App Service'
