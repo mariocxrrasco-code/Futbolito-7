@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Informe SRS — Especificación de Requerimientos Futbolito 7</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    
+    @page {
+      size: A4 portrait;
+      margin: 12mm 14mm 12mm 14mm;
+    }
+    
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #1e293b;
+      line-height: 1.4;
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .document-container {
+      max-width: 850px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 25px 35px;
+      border-radius: 8px;
+    }
+
+    /* Header */
+    .header-banner {
+      border-bottom: 2.5px solid #10b981;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .project-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+      margin: 0;
+    }
+
+    .project-subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 3px;
+      font-weight: 600;
+    }
+
+    .meta-box {
+      background: #f1f5f9;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 11px;
+      color: #334155;
+      text-align: right;
+      line-height: 1.4;
+    }
+
+    h2 {
+      font-size: 13.5px;
+      color: #0f172a;
+      border-left: 3.5px solid #10b981;
+      padding-left: 8px;
+      margin-top: 14px;
+      margin-bottom: 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    h3 {
+      font-size: 12.5px;
+      color: #0f172a;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+
+    p {
+      font-size: 11.5px;
+      color: #334155;
+      margin-bottom: 8px;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 11px;
+    }
+
+    th {
+      background-color: #0f172a;
+      color: #ffffff;
+      font-weight: 600;
+      text-align: left;
+      padding: 6px 10px;
+    }
+
+    td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #334155;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 1.5px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .badge-critica { background: #fee2e2; color: #991b1b; }
+    .badge-alta { background: #fef3c7; color: #92400e; }
+    .badge-media { background: #e0e7ff; color: #3730a3; }
+
+    /* Gherkin Code Blocks */
+    .gherkin-box {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      margin: 8px 0;
+      line-height: 1.4;
+    }
+    .gherkin-keyword { color: #38bdf8; font-weight: bold; }
+    .gherkin-string { color: #a7f3d0; }
+
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+      margin-top: 15px;
+    }
+
+    .footer {
+      margin-top: 18px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 8px;
+      font-size: 10px;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    @media print {
+      body { background: #ffffff; padding: 0; }
+      .document-container { box-shadow: none; padding: 0; max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="document-container">
+    <!-- PÁGINA 1 -->
+    <div class="header-banner">
+      <div>
+        <h1 class="project-title">FUTBOLITO 7</h1>
+        <div class="project-subtitle">Especificación de Requerimientos de Software (SRS)</div>
+      </div>
+      <div class="meta-box">
+        <div><strong>Responsable:</strong> Paulo Alegría Díaz (Analista)</div>
+        <div><strong>Work Item:</strong> Issue #3 (Sprint 1)</div>
+        <div><strong>Estándar:</strong> IEEE 830 / Formato Ágil</div>
+      </div>
+    </div>
+
+    <!-- 1. Introducción -->
+    <h2>1. Introducción y Alcance</h2>
+    <p>
+      El presente documento formaliza los requerimientos funcionales y no funcionales de <strong>Futbolito 7</strong>, plataforma web para la digitalización de complejos deportivos. Define las reglas de negocio: reserva por bloques de 60 min con control de concurrencia, tarifas punta/valle, pasarelas de pago, split payment 6v6 y anonimización de datos en auditoría.
+    </p>
+
+    <!-- 2. Requerimientos Funcionales -->
+    <h2>2. Matriz de Requerimientos Funcionales (RF)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 10%;">ID</th>
+          <th style="width: 18%;">Módulo</th>
+          <th style="width: 58%;">Descripción del Requerimiento</th>
+          <th style="width: 14%;">Prioridad</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>RF-01</strong></td>
+          <td>Canchas</td>
+          <td>Catalogación de canchas: superficie (sintético/caucho), techada/aire libre y estado.</td>
+          <td><span class="badge badge-alta">Alta</span></td>
+        </tr>
+        <tr>
+          <td><strong>RF-02</strong></td>
+          <td>Reservas</td>
+          <td>Agendamiento por bloques cerrados (60 min) con concurrencia pesimista (<code>select_for_update</code>).</td>
+          <td><span class="badge badge-critica">Crítica</span></td>
+        </tr>
+        <tr>
+          <td><strong>RF-03</strong></td>
+          <td>Tarifas</td>
+          <td>Tarifas diferenciadas: Horario Valle (diurno) y Horario Punta (nocturno/findes).</td>
+          <td><span class="badge badge-alta">Alta</span></td>
+        </tr>
+        <tr>
+          <td><strong>RF-04</strong></td>
+          <td>Matchmaking</td>
+          <td>Salas públicas 6v6 (12 cupos) con balanceo automático (Equipo A vs. Equipo B).</td>
+          <td><span class="badge badge-alta">Alta</span></td>
+        </tr>
+        <tr>
+          <td><strong>RF-05</strong></td>
+          <td>Pagos</td>
+          <td>Pago Total (100%) y Split Payment (12 enlaces individuales con expiración a 12 horas).</td>
+          <td><span class="badge badge-critica">Crítica</span></td>
+        </tr>
+        <tr>
+          <td><strong>RF-06</strong></td>
+          <td>Recepción</td>
+          <td>Registro manual de cobros presenciales (efectivo / transferencia bancaria) por el operador.</td>
+          <td><span class="badge badge-alta">Alta</span></td>
+        </tr>
+        <tr>
+          <td><strong>RF-07</strong></td>
+          <td>Cancelaciones</td>
+          <td>Liberación automática de bloques por cancelación con anticipación mínima (4 horas).</td>
+          <td><span class="badge badge-media">Media</span></td>
+        </tr>
+        <tr>
+          <td><strong>RF-08</strong></td>
+          <td>Operaciones</td>
+          <td>Panel de turnos diario y validación de llegadas mediante check-in QR o manual.</td>
+          <td><span class="badge badge-alta">Alta</span></td>
+        </tr>
+        <tr>
+          <td><strong>RF-09</strong></td>
+          <td>Métricas</td>
+          <td>Dashboard financiero y de ocupación con agregaciones ORM (ingresos y demanda).</td>
+          <td><span class="badge badge-alta">Alta</span></td>
+        </tr>
+        <tr>
+          <td><strong>RF-10</strong></td>
+          <td>Auditoría</td>
+          <td>Registro middleware en <code>AuditLog</code> con enmascaramiento de PII.</td>
+          <td><span class="badge badge-alta">Alta</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- FORZAR SALTO A PÁGINA 2 EXACTA -->
+    <div class="page-break"></div>
+
+    <!-- PÁGINA 2 -->
+    <!-- 3. Historias de Usuario con Gherkin -->
+    <h2>3. Historias de Usuario y Criterios de Aceptación (Gherkin)</h2>
+
+    <h3>US-01: Control de Concurrencia en Reservas</h3>
+    <p><strong>Como</strong> Jugador, <strong>quiero</strong> seleccionar un bloque libre en el calendario, <strong>para</strong> asegurar mi partido sin riesgo de sobre-reserva.</p>
+    
+    <div class="gherkin-box">
+      <span class="gherkin-keyword">Scenario:</span> Intento de reserva simultánea sobre el mismo bloque<br>
+      &nbsp;&nbsp;<span class="gherkin-keyword">Given</span> que el usuario A procesa el pago del bloque 20:00 - 21:00<br>
+      &nbsp;&nbsp;<span class="gherkin-keyword">When</span> el usuario B intenta reservar el mismo bloque concurrentemente<br>
+      &nbsp;&nbsp;<span class="gherkin-keyword">Then</span> PostgreSQL bloquea la fila y responde vía HTMX con <span class="gherkin-string">"Bloque no disponible"</span>.
+    </div>
+
+    <h3>US-02: División de Pagos (Split Payment 6v6)</h3>
+    <p><strong>Como</strong> Capitán, <strong>quiero</strong> dividir el arriendo entre los 12 jugadores, <strong>para</strong> no asumir la cobranza individual.</p>
+
+    <div class="gherkin-box">
+      <span class="gherkin-keyword">Scenario:</span> Flujo de enlaces de pago compartido<br>
+      &nbsp;&nbsp;<span class="gherkin-keyword">Given</span> una reserva de $36.000 en modalidad Split Payment<br>
+      &nbsp;&nbsp;<span class="gherkin-keyword">When</span> el capitán paga su cuota de $3.000<br>
+      &nbsp;&nbsp;<span class="gherkin-keyword">Then</span> se generan 11 enlaces con caducidad de 12 hrs. Al completarse, pasa a <span class="gherkin-string">"Confirmada"</span>.
+    </div>
+
+    <!-- 4. Requerimientos No Funcionales -->
+    <h2>4. Matriz de Requerimientos No Funcionales (RNF)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 18%;">Categoría</th>
+          <th style="width: 42%;">Requerimiento No Funcional</th>
+          <th style="width: 40%;">Criterio / Métrica</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Rendimiento</strong></td>
+          <td>Tiempo de respuesta en HTMX.</td>
+          <td>Respuestas asíncronas menores a <strong>300 ms</strong>.</td>
+        </tr>
+        <tr>
+          <td><strong>Concurrencia</strong></td>
+          <td>Integridad transaccional ACID.</td>
+          <td>Bloqueos <code>select_for_update</code> en base de datos.</td>
+        </tr>
+        <tr>
+          <td><strong>Seguridad</strong></td>
+          <td>Protección CSRF y control de acceso.</td>
+          <td>Tokens CSRF obligatorios y roles RBAC estrictos.</td>
+        </tr>
+        <tr>
+          <td><strong>Privacidad</strong></td>
+          <td>Anonimización de datos (PII).</td>
+          <td>Enmascaramiento en logs (ej. <code>m***@correo.cl</code>).</td>
+        </tr>
+        <tr>
+          <td><strong>Disponibilidad</strong></td>
+          <td>Timeouts de reservas temporales.</td>
+          <td>Liberación de bloques impagos tras 10 minutos.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div>Plataforma Web Futbolito 7 — Documentación Oficial de Ingeniería de Software</div>
+      <div>Página 2 de 2 • Azure DevOps / Sprint 1</div>
+    </div>
+  </div>
+
+</body>
+</html>

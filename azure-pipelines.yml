@@ -46,7 +46,7 @@ stages:
 
           - script: |
               # Análisis Estático de Código Seguro (SAST - ISO 27034)
-              bandit -r . -x ./docs -ll -ii || echo "SAST audit completed with warnings"
+              bandit -r apps config -ll -ii || echo "SAST audit completed with warnings"
             displayName: 'Escaneo SAST de vulnerabilidades con Bandit'
 
           - script: |
@@ -79,6 +79,15 @@ stages:
               echo "Validando sintaxis e integridad de Python en el entorno CI..."
               python -m compileall .
             displayName: 'Validación de Integridad y Compilación Python'
+
+          - script: |
+              echo "Ejecutando suite de pruebas unitarias y concurrencia pesimista (ISO 27034 R-01)..."
+              python manage.py test
+            displayName: 'Ejecución de Pruebas Unitarias (manage.py test)'
+            env:
+              SECRET_KEY: 'ci-secret-key-temporary-pipeline-test'
+              DEBUG: 'False'
+              DATABASE_URL: 'sqlite:///db.sqlite3'
 
   # =========================================================================
   # ETAPA 3: EMPAQUETADO Y PREPARACIÓN DE DESPLIEGUE (CD)

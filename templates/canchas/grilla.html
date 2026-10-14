@@ -1,0 +1,543 @@
+{% extends "base.html" %}
+
+{% block title %}Arriendo de Canchas en Vivo — Futbolito 7{% endblock %}
+
+{% block content %}
+<div x-data="grillaApp()" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- ========================================================================= -->
+    <!-- HERO BANNER DEPORTIVO (Estilo Club Real inspirado en Plaza 7)              -->
+    <!-- ========================================================================= -->
+    <div class="relative overflow-hidden rounded-3xl bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl transition-colors">
+        
+        <!-- Imagen de Fondo de Estadio / Césped Deportivo con Overlay -->
+        <div class="absolute inset-0 z-0 opacity-40 dark:opacity-30 mix-blend-luminosity bg-cover bg-center pointer-events-none" 
+             style="background-image: url('https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&w=1600&q=80');">
+        </div>
+        
+        <!-- Degradado de atmósfera deportiva -->
+        <div class="absolute inset-0 z-0 bg-gradient-to-r from-emerald-950/90 via-slate-900/90 to-slate-900/70 dark:from-[#052e16]/95 dark:via-[#0b1120]/90 dark:to-[#0b1120]/75"></div>
+
+        <div class="relative z-10 p-6 sm:p-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+            <div class="max-w-2xl space-y-3">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold uppercase tracking-wider">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                        <span>Disponibilidad en Vivo</span>
+                    </span>
+                    <span class="text-xs font-medium text-emerald-200/80 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-800/40">
+                        📍 {{ complejo.direccion|default:"Av. Américo Vespucio Sur 1500" }}, {{ complejo.comuna|default:"Santiago" }}
+                    </span>
+                </div>
+
+                <h1 class="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white font-athletic">
+                    ARRIENDA TU CANCHA <span class="text-emerald-400">EN TIEMPO REAL</span>
+                </h1>
+
+                <p class="text-sm sm:text-base text-slate-300 font-normal leading-relaxed">
+                    Reserva inmediata de canchas de Fútbol 7 con césped sintético FIFA Pro y pabellones techados. Sistema con 
+                    <strong class="text-white font-semibold">bloqueo atómico pesimista</strong> para evitar colisiones y doble arriendo.
+                </p>
+
+                <!-- Beneficios e Infraestructura del Complejo -->
+                <div class="pt-2 flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-200">
+                    <div class="flex items-center space-x-1.5 bg-black/30 px-3 py-1.5 rounded-lg border border-white/10">
+                        <span class="text-base">🏟️</span>
+                        <span>Césped Monofilamento 50mm</span>
+                    </div>
+                    <div class="flex items-center space-x-1.5 bg-black/30 px-3 py-1.5 rounded-lg border border-white/10">
+                        <span class="text-base">💡</span>
+                        <span>Focos LED 500 Lux</span>
+                    </div>
+                    <div class="flex items-center space-x-1.5 bg-black/30 px-3 py-1.5 rounded-lg border border-white/10">
+                        <span class="text-base">🚿</span>
+                        <span>Camarines & Estacionamiento</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón de Demostración para el Docente -->
+            <div class="flex flex-col sm:flex-row lg:flex-col items-stretch gap-3 shrink-0">
+                <button @click="ejecutarTestConcurrencia()" 
+                        :disabled="simulandoConcurrencia" 
+                        class="inline-flex items-center justify-center space-x-2.5 px-6 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider font-athletic transition duration-200 shadow-lg shadow-amber-500/20 active:scale-95 disabled:opacity-50">
+                    <svg class="w-5 h-5 text-slate-950" :class="{'animate-spin': simulandoConcurrencia}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <span x-text="simulandoConcurrencia ? 'Simulando Colisión...' : '⚡ Probar Concurrencia R-01 (Docente)'"></span>
+                </button>
+                <span class="text-center text-[11px] font-semibold text-slate-400">
+                    Demostración en vivo de <code class="text-emerald-300">select_for_update()</code>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BARRA DE FECHA Y FILTROS TARIFF (ALTO CONTRASTE Y LEGIBILIDAD)            -->
+    <!-- ========================================================================= -->
+    <div class="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 transition-colors">
+        
+        <!-- Selector Rápido de Días -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0">
+            <span class="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mr-1 shrink-0 font-athletic">Seleccionar Día:</span>
+            
+            <input type="date" x-model="fechaSeleccionada" @change="cargarBloques()" 
+                   class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-xl px-3 py-2 font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+            
+            <button @click="seleccionarOffsetDias(0)" 
+                    :class="esDiaOffset(0) ? 'bg-emerald-600 text-white font-black shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-semibold'" 
+                    class="px-4 py-2 rounded-xl text-xs uppercase font-athletic transition duration-150 shrink-0">
+                Hoy
+            </button>
+            <button @click="seleccionarOffsetDias(1)" 
+                    :class="esDiaOffset(1) ? 'bg-emerald-600 text-white font-black shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-semibold'" 
+                    class="px-4 py-2 rounded-xl text-xs uppercase font-athletic transition duration-150 shrink-0">
+                Mañana
+            </button>
+            <button @click="seleccionarOffsetDias(2)" 
+                    :class="esDiaOffset(2) ? 'bg-emerald-600 text-white font-black shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-semibold'" 
+                    class="px-4 py-2 rounded-xl text-xs uppercase font-athletic transition duration-150 shrink-0">
+                +2 Días
+            </button>
+            <button @click="seleccionarOffsetDias(3)" 
+                    :class="esDiaOffset(3) ? 'bg-emerald-600 text-white font-black shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-semibold'" 
+                    class="px-4 py-2 rounded-xl text-xs uppercase font-athletic transition duration-150 shrink-0">
+                +3 Días
+            </button>
+        </div>
+
+        <!-- Leyenda Deportiva Clara -->
+        <div class="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <div class="flex items-center space-x-1.5">
+                <span class="w-3.5 h-3.5 rounded-md bg-emerald-500 border border-emerald-600 shadow-sm"></span>
+                <span>Disponible</span>
+            </div>
+            <div class="flex items-center space-x-1.5">
+                <span class="w-3.5 h-3.5 rounded-md bg-amber-500 border border-amber-600"></span>
+                <span>Bloqueo 10m (En Pago)</span>
+            </div>
+            <div class="flex items-center space-x-1.5">
+                <span class="w-3.5 h-3.5 rounded-md bg-slate-300 dark:bg-slate-700"></span>
+                <span>Ocupado</span>
+            </div>
+            <div class="h-4 w-px bg-slate-300 dark:bg-slate-700 hidden sm:block"></div>
+            <div class="flex items-center space-x-1.5">
+                <span class="px-2 py-0.5 rounded text-[11px] font-black uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 font-athletic">🌱 Valle</span>
+                <span class="text-slate-500 dark:text-slate-400 font-medium">Diurno</span>
+            </div>
+            <div class="flex items-center space-x-1.5">
+                <span class="px-2 py-0.5 rounded text-[11px] font-black uppercase bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-700 font-athletic">⚡ Punta</span>
+                <span class="text-slate-500 dark:text-slate-400 font-medium">Noche/Finde</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- ALERTA DINÁMICA DE CONCURRENCIA O CONFIRMACIÓN                            -->
+    <!-- ========================================================================= -->
+    <div x-show="alerta.mensaje" x-transition 
+         class="p-4 sm:p-5 rounded-2xl border shadow-lg transition" 
+         :class="alerta.tipo === 'success' ? 'bg-emerald-50 border-emerald-300 text-emerald-900 dark:bg-emerald-950/80 dark:border-emerald-500 dark:text-emerald-100' : (alerta.tipo === 'conflict' ? 'bg-red-50 border-red-300 text-red-900 dark:bg-red-950/90 dark:border-red-500 dark:text-red-100' : 'bg-blue-50 border-blue-300 text-blue-900 dark:bg-blue-950/80 dark:border-blue-500 dark:text-blue-100')"
+         style="display: none;">
+        <div class="flex items-start space-x-3.5">
+            <template x-if="alerta.tipo === 'conflict'">
+                <svg class="w-6 h-6 text-red-600 dark:text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </template>
+            <template x-if="alerta.tipo === 'success'">
+                <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </template>
+            <div class="flex-1 text-sm">
+                <h4 class="font-bold text-base font-athletic uppercase tracking-wide" x-text="alerta.titulo"></h4>
+                <p class="mt-1 font-medium leading-relaxed" x-text="alerta.mensaje"></p>
+                <template x-if="alerta.codigoReserva">
+                    <div class="mt-3">
+                        <a :href="'/comprobante/' + alerta.codigoReserva + '/'" class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider font-athletic hover:bg-emerald-500 transition shadow-sm">
+                            <span>Descargar Comprobante con PII Enmascarado</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </a>
+                    </div>
+                </template>
+            </div>
+            <button @click="alerta.mensaje = ''" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TARJETAS DE CANCHAS Y GRILLA DE HORARIOS (DISEÑO ATLÉTICO PROFESIONAL)    -->
+    <!-- ========================================================================= -->
+    <div class="space-y-8">
+        {% for cancha in canchas %}
+        <div class="rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
+            
+            <!-- Encabezado de la Cancha -->
+            <div class="px-6 py-5 bg-slate-50/80 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <!-- Avatar / Insignia de Cancha -->
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700/60 flex items-center justify-center text-emerald-700 dark:text-emerald-400 shrink-0 shadow-sm">
+                        {% if cancha.techada %}
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                        {% else %}
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h2 class="text-xl font-black uppercase text-slate-900 dark:text-white font-athletic tracking-wide">{{ cancha.nombre }}</h2>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 font-athletic">Fútbol 7</span>
+                        </div>
+                        
+                        <div class="flex flex-wrap items-center gap-2 mt-1 text-xs font-semibold">
+                            <span class="inline-flex items-center text-emerald-700 dark:text-emerald-400">
+                                ⚽ {{ cancha.superficie.nombre }}
+                            </span>
+                            <span class="text-slate-300 dark:text-slate-700">•</span>
+                            {% if cancha.techada %}
+                            <span class="text-blue-700 dark:text-blue-300">
+                                🏠 Techada Climatizada
+                            </span>
+                            {% else %}
+                            <span class="text-amber-700 dark:text-amber-300">
+                                ☀️ Al Aire Libre
+                            </span>
+                            {% endif %}
+                            <span class="text-slate-300 dark:text-slate-700">•</span>
+                            <span class="text-slate-600 dark:text-slate-400">
+                                💡 Focos LED Nocturnos
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-left md:text-right border-t md:border-t-0 pt-2 md:pt-0 border-slate-200 dark:border-slate-800">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block font-athletic">Tarifa Referencial</span>
+                    <span class="text-xl font-black text-slate-900 dark:text-white font-athletic tracking-wide">${{ cancha.precio_base|floatformat:0 }} CLP / hr</span>
+                </div>
+            </div>
+
+            <!-- Grilla Horaria de la Cancha -->
+            <div class="p-5 sm:p-6">
+                <template x-if="cargandoBloques">
+                    <div class="py-12 flex justify-center items-center space-x-3 text-slate-500 dark:text-slate-400">
+                        <svg class="w-6 h-6 animate-spin text-emerald-600 dark:text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span class="text-xs font-bold uppercase tracking-wider font-athletic">Consultando disponibilidad en tiempo real...</span>
+                    </div>
+                </template>
+
+                <div x-show="!cargandoBloques" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                    <template x-for="bloque in getBloquesCancha({{ cancha.id }})" :key="bloque.id">
+                        <div class="rounded-2xl p-3.5 border transition-all duration-200 flex flex-col justify-between select-none relative group"
+                             :class="{
+                                 'bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-600/50 hover:border-emerald-500 hover:shadow-md hover:scale-[1.02] cursor-pointer': bloque.esta_disponible,
+                                 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-600/50 cursor-not-allowed': bloque.estado === 'EN_PROCESO_PAGO' && !bloque.esta_disponible,
+                                 'bg-slate-100 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/80 opacity-60 cursor-not-allowed': bloque.estado === 'RESERVADO' || bloque.estado === 'MANTENCION'
+                             }"
+                             @click="bloque.esta_disponible ? abrirModalReserva(bloque, '{{ cancha.nombre|escapejs }}') : null">
+                            
+                            <!-- Header del Turno: Horario y Tag Punta/Valle -->
+                            <div class="flex items-center justify-between">
+                                <span class="font-black text-sm text-slate-900 dark:text-white font-athletic tracking-wide" x-text="bloque.hora_inicio_str + ' - ' + bloque.hora_fin_str"></span>
+                                <span class="text-[10px] font-black uppercase px-1.5 py-0.5 rounded font-athletic tracking-wide"
+                                      :class="bloque.es_punta ? 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-700' : 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'"
+                                      x-text="bloque.es_punta ? '⚡ Punta' : '🌱 Valle'">
+                                </span>
+                            </div>
+
+                            <!-- Precio y Estado -->
+                            <div class="mt-3 pt-2.5 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
+                                <span class="text-xs font-black text-slate-800 dark:text-slate-200 font-athletic" x-text="'$' + Number(bloque.precio).toLocaleString('es-CL')"></span>
+
+                                <!-- Estado Disponible con Botón Reservar -->
+                                <template x-if="bloque.esta_disponible">
+                                    <span class="inline-flex items-center text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 group-hover:translate-x-0.5 transition-transform font-athletic">
+                                        <span>Reservar</span>
+                                        <svg class="w-3.5 h-3.5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    </span>
+                                </template>
+
+                                <!-- Estado En Proceso de Pago (Temporizador 10 min) -->
+                                <template x-if="bloque.estado === 'EN_PROCESO_PAGO' && !bloque.esta_disponible">
+                                    <span class="text-[10px] font-bold text-amber-700 dark:text-amber-400 flex items-center">
+                                        <svg class="w-3.5 h-3.5 mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        <span>En Proceso</span>
+                                    </span>
+                                </template>
+
+                                <!-- Estado Reservado / Ocupado -->
+                                <template x-if="bloque.estado === 'RESERVADO'">
+                                    <span class="text-[10px] font-bold text-slate-500 flex items-center">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                        <span>Ocupado</span>
+                                    </span>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL DE CHECKOUT Y RESERVA CON CONTROL DE CONCURRENCIA R-01             -->
+    <!-- ========================================================================= -->
+    <div x-show="modalAbierto" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+         style="display: none;">
+        
+        <div class="relative w-full max-w-lg rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-2xl text-left" @click.away="modalAbierto = false">
+            
+            <!-- Modal Header -->
+            <div class="flex items-start justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+                <div>
+                    <span class="text-xs font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-athletic">Paso Final • Reserva Oficial</span>
+                    <h3 class="text-2xl font-black uppercase text-slate-900 dark:text-white font-athletic tracking-wide mt-0.5" x-text="canchaSeleccionadaNombre"></h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium" 
+                       x-text="'Fecha: ' + fechaSeleccionada + ' | Turno: ' + (bloqueSeleccionado ? bloqueSeleccionado.hora_inicio_str + ' a ' + bloqueSeleccionado.hora_fin_str + ' hrs' : '')"></p>
+                </div>
+                <button @click="modalAbierto = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Resumen de Tarifa -->
+            <div class="mt-5 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 block uppercase font-athletic tracking-wider">Categoría de Franja:</span>
+                    <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 font-athletic" 
+                          x-text="bloqueSeleccionado && bloqueSeleccionado.es_punta ? '⚡ Horario Punta (Alta Demanda)' : '🌱 Horario Valle (Tarifa Promocional)'"></span>
+                </div>
+                <div class="text-right">
+                    <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase font-athletic">Total Arriendo</span>
+                    <span class="text-2xl font-black text-slate-900 dark:text-white font-athletic tracking-wide" 
+                          x-text="bloqueSeleccionado ? '$' + Number(bloqueSeleccionado.precio).toLocaleString('es-CL') + ' CLP' : ''"></span>
+                </div>
+            </div>
+
+            <!-- Formulario de Reserva -->
+            <form @submit.prevent="confirmarReserva()" class="mt-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 font-athletic">Nombre Completo del Capitán o Titular</label>
+                    <input type="text" x-model="form.nombre" required placeholder="Ej: Mario Carrasco" 
+                           class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 font-athletic">WhatsApp / Teléfono Móvil</label>
+                        <input type="tel" x-model="form.telefono" required placeholder="+56 9 9876 5432" 
+                               class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 font-athletic">Correo Electrónico (Boleta/Factura)</label>
+                        <input type="email" x-model="form.email" required placeholder="contacto@ejemplo.cl" 
+                               class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 font-athletic">Notas de Partido (Opcional)</label>
+                    <input type="text" x-model="form.notas" placeholder="Ej: Necesitamos 12 petos de entrenamiento" 
+                           class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <!-- Garantía de Seguridad ISO 27034 -->
+                <div class="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs text-slate-700 dark:text-slate-300 flex items-start space-x-2.5">
+                    <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    <span class="leading-relaxed">
+                        <strong class="text-slate-900 dark:text-white">Bloqueo Pesimista PostgreSQL 16:</strong> Al hacer clic en confirmar, el bloque queda reservado exclusivamente para ti por 10 minutos contra cualquier solicitud simultánea.
+                    </span>
+                </div>
+
+                <!-- Botón de Envío -->
+                <div class="pt-3">
+                    <button type="submit" :disabled="procesando" 
+                            class="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm uppercase tracking-wider font-athletic shadow-lg shadow-emerald-600/30 transition duration-150 flex items-center justify-center space-x-2 disabled:opacity-50">
+                        <template x-if="procesando">
+                            <svg class="w-4 h-4 animate-spin text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </template>
+                        <span x-text="procesando ? 'Procesando con select_for_update()...' : 'Confirmar Reserva de Cancha'"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function grillaApp() {
+        return {
+            fechaSeleccionada: '{{ fecha_seleccionada }}',
+            hoyStr: '{{ hoy }}',
+            bloques: [],
+            cargandoBloques: false,
+            modalAbierto: false,
+            canchaSeleccionadaNombre: '',
+            bloqueSeleccionado: null,
+            procesando: false,
+            simulandoConcurrencia: false,
+            alerta: {
+                titulo: '',
+                mensaje: '',
+                tipo: '',
+                codigoReserva: null,
+            },
+            form: {
+                nombre: '',
+                telefono: '+56 9 ',
+                email: '',
+                notas: '',
+            },
+
+            init() {
+                this.cargarBloques();
+            },
+
+            esDiaOffset(offset) {
+                const target = new Date();
+                target.setDate(target.getDate() + offset);
+                const iso = target.toISOString().split('T')[0];
+                return this.fechaSeleccionada === iso;
+            },
+
+            seleccionarOffsetDias(offset) {
+                const target = new Date();
+                target.setDate(target.getDate() + offset);
+                this.fechaSeleccionada = target.toISOString().split('T')[0];
+                this.cargarBloques();
+            },
+
+            async cargarBloques() {
+                this.cargandoBloques = true;
+                try {
+                    const res = await fetch(`/api/disponibilidad/?fecha=${this.fechaSeleccionada}`);
+                    const data = await res.json();
+                    this.bloques = data.bloques || [];
+                } catch (e) {
+                    console.error("Error al cargar bloques:", e);
+                } finally {
+                    this.cargandoBloques = false;
+                }
+            },
+
+            getBloquesCancha(canchaId) {
+                return this.bloques.filter(b => b.cancha_id === canchaId);
+            },
+
+            abrirModalReserva(bloque, canchaNombre) {
+                this.bloqueSeleccionado = bloque;
+                this.canchaSeleccionadaNombre = canchaNombre;
+                this.modalAbierto = true;
+            },
+
+            async confirmarReserva() {
+                if (!this.bloqueSeleccionado) return;
+                this.procesando = true;
+
+                try {
+                    const res = await fetch('/api/reservar/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCSRFToken()
+                        },
+                        body: JSON.stringify({
+                            bloque_id: this.bloqueSeleccionado.id,
+                            nombre_cliente: this.form.nombre,
+                            telefono_cliente: this.form.telefono,
+                            email_cliente: this.form.email,
+                            notas: this.form.notas
+                        })
+                    });
+
+                    const data = await res.json();
+
+                    if (res.status === 201) {
+                        this.modalAbierto = false;
+                        this.alerta = {
+                            titulo: '¡Reserva Confirmada con Éxito!',
+                            mensaje: `Cancha asegurada para ${data.nombre_cliente}. Código oficial de reserva: ${data.codigo_reserva}. Tienes 10 minutos para concretar el pago.`,
+                            tipo: 'success',
+                            codigoReserva: data.codigo_reserva
+                        };
+                        this.cargarBloques();
+                    } else if (res.status === 409) {
+                        this.modalAbierto = false;
+                        this.alerta = {
+                            titulo: 'Colisión Evitada (Overbooking Neutralizado)',
+                            mensaje: data.detail || 'El bloque horario acaba de ser tomado por otro usuario.',
+                            tipo: 'conflict',
+                            codigoReserva: null
+                        };
+                        this.cargarBloques();
+                    } else {
+                        alert(data.detail || 'Ocurrió un error al procesar la reserva.');
+                    }
+                } catch (e) {
+                    alert('Error de conexión con el servidor.');
+                } finally {
+                    this.procesando = false;
+                }
+            },
+
+            async ejecutarTestConcurrencia() {
+                this.simulandoConcurrencia = true;
+                this.alerta.mensaje = '';
+
+                try {
+                    const res = await fetch('/api/test-concurrencia/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCSRFToken()
+                        }
+                    });
+
+                    const data = await res.json();
+                    this.alerta = {
+                        titulo: 'Demostración de Concurrencia R-01 Completada',
+                        mensaje: `${data.resultado} Detalle: ${data.ganador} logró el bloqueo con select_for_update(), mientras que ${data.perdedor} fue rechazado con error 409 Conflict.`,
+                        tipo: 'success',
+                        codigoReserva: null
+                    };
+                    this.cargarBloques();
+                } catch (e) {
+                    this.alerta = {
+                        titulo: 'Error en la Simulación',
+                        mensaje: 'No se pudo contactar al endpoint de prueba concurrente.',
+                        tipo: 'conflict',
+                        codigoReserva: null
+                    };
+                } finally {
+                    this.simulandoConcurrencia = false;
+                }
+            },
+
+            getCSRFToken() {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, 10) === ('csrftoken=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(10));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue || 'dummy-token';
+            }
+        }
+    }
+</script>
+{% endblock %}

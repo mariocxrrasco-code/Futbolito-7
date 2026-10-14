@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Informe UI/UX — Flujo de Navegación y Wireframes Futbolito 7</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    
+    @page {
+      size: A4 portrait;
+      margin: 12mm 14mm 12mm 14mm;
+    }
+    
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #1e293b;
+      line-height: 1.45;
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .document-container {
+      max-width: 850px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 25px 35px;
+      border-radius: 8px;
+    }
+
+    /* Header Banner */
+    .header-banner {
+      border-bottom: 2.5px solid #10b981;
+      padding-bottom: 14px;
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .project-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+      margin: 0;
+    }
+
+    .project-subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 3px;
+      font-weight: 600;
+    }
+
+    .meta-box {
+      background: #f1f5f9;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 11px;
+      color: #334155;
+      text-align: right;
+      line-height: 1.4;
+    }
+
+    h2 {
+      font-size: 14px;
+      color: #0f172a;
+      border-left: 3.5px solid #10b981;
+      padding-left: 8px;
+      margin-top: 16px;
+      margin-bottom: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    h3 {
+      font-size: 13px;
+      color: #0f172a;
+      margin-top: 0;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+
+    p {
+      font-size: 12px;
+      color: #334155;
+      margin-bottom: 8px;
+    }
+
+    .wireframe-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      background: #f8fafc;
+    }
+
+    .wireframe-tag {
+      display: inline-block;
+      padding: 1.5px 6px;
+      background: #e2e8f0;
+      color: #334155;
+      font-size: 9.5px;
+      font-weight: 700;
+      border-radius: 3px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    ul {
+      margin-top: 4px;
+      margin-bottom: 4px;
+      padding-left: 18px;
+      font-size: 11.5px;
+      color: #334155;
+    }
+
+    li {
+      margin-bottom: 3px;
+    }
+
+    /* Page break control */
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+      margin-top: 15px;
+    }
+
+    .footer {
+      margin-top: 20px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 8px;
+      font-size: 10px;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    @media print {
+      body { background: #ffffff; padding: 0; }
+      .document-container { box-shadow: none; padding: 0; max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="document-container">
+    <!-- PÁGINA 1 -->
+    <div class="header-banner">
+      <div>
+        <h1 class="project-title">FUTBOLITO 7</h1>
+        <div class="project-subtitle">Informe de Arquitectura de Información y Prototipado UI/UX</div>
+      </div>
+      <div class="meta-box">
+        <div><strong>Responsable:</strong> Mario Carrasco (UI/UX / Frontend)</div>
+        <div><strong>Work Item:</strong> Issue #5 (Sprint 1)</div>
+        <div><strong>Entregables:</strong> Prototipo HTML / draw.io</div>
+      </div>
+    </div>
+
+    <!-- 1. Objetivos UX -->
+    <h2>1. Objetivos de Experiencia de Usuario (UX)</h2>
+    <p>
+      El diseño de interfaz para <strong>Futbolito 7</strong> fue concebido bajo el principio de <em>cero fricción operativa</em>, permitiendo a los jugadores arrendar canchas en menos de 3 pasos y facilitando al personal de recepción el control en vivo de los turnos diarios con respuestas asíncronas vía HTMX.
+    </p>
+
+    <!-- 2. Arquitectura de Navegación -->
+    <h2>2. Flujo de Navegación y Perfiles de Usuario</h2>
+    
+    <div class="wireframe-card">
+      <span class="wireframe-tag">1. RUTA JUGADOR (RESERVA DIRECTA Y MATCHMAKING)</span>
+      <ul>
+        <li><strong>Reserva Directa:</strong> Home &rarr; Calendario de Disponibilidad Semanal &rarr; Selección Cancha/Bloque &rarr; Formulario de Reserva &rarr; Pasarela de Pago / Split Payment &rarr; Comprobante QR.</li>
+        <li><strong>Matchmaking 6v6:</strong> Lobby de Partidos Abiertos &rarr; Selección de Cupo Individual &rarr; Pago de Cuota &rarr; Asignación a Equipo A o B.</li>
+      </ul>
+    </div>
+
+    <div class="wireframe-card">
+      <span class="wireframe-tag">2. RUTA OPERADOR (RECEPCIÓN Y CHECK-IN)</span>
+      <ul>
+        <li><strong>Control de Turnos:</strong> Login Operador &rarr; Panel de Turnos en Vivo &rarr; Validación de Check-in QR &rarr; Registro de Pagos Presenciales (Efectivo/Transferencia).</li>
+      </ul>
+    </div>
+
+    <div class="wireframe-card">
+      <span class="wireframe-tag">3. RUTA ADMINISTRADOR (GESTIÓN Y FINANZAS)</span>
+      <ul>
+        <li><strong>Supervisión Global:</strong> Login Admin &rarr; Dashboard de Métricas &rarr; Reporte de Ocupación Mensual &rarr; Configuración de Tarifas Punta y Valle.</li>
+      </ul>
+    </div>
+
+    <!-- FORZAR SALTO A PÁGINA 2 EXACTA -->
+    <div class="page-break"></div>
+
+    <!-- PÁGINA 2 -->
+    <h2>3. Especificación de los 3 Wireframes Clave</h2>
+
+    <div class="wireframe-card">
+      <span class="wireframe-tag">WIREFRAME 1: CALENDARIO SEMANAL DE DISPONIBILIDAD</span>
+      <h3>Grilla Interactiva de Bloques Horarios</h3>
+      <p>Vista principal para clientes y recepción con actualización en tiempo real.</p>
+      <ul>
+        <li><strong>Filtros Dinámicos (HTMX):</strong> Selector de cancha (Techada, Aire Libre) y navegación de semanas sin recarga de página.</li>
+        <li><strong>Diferenciación Visual de Tarifas:</strong> Bloques verdes para Horario Valle ($26.000) y ámbar para Horario Punta ($38.000).</li>
+        <li><strong>Estados de Bloque:</strong> Disponible, Ocupado, En Proceso de Reserva (bloqueo temporal 10 min) y Sala Matchmaking.</li>
+      </ul>
+    </div>
+
+    <div class="wireframe-card">
+      <span class="wireframe-tag">WIREFRAME 2: FORMULARIO INTERACTIVO DE RESERVA Y SPLIT PAYMENT</span>
+      <h3>Checkout y División de Pago (6v6)</h3>
+      <p>Modal y vista de confirmación para capturar datos y procesar transacciones.</p>
+      <ul>
+        <li><strong>Datos del Capitán:</strong> Nombre, teléfono WhatsApp y correo electrónico para envío de comprobante y QR.</li>
+        <li><strong>Selector de Modalidad:</strong> Pago Total (100% Webpay/Stripe) o Split Payment (12 enlaces con temporizador de 12 horas).</li>
+        <li><strong>Políticas Claras:</strong> Términos de cancelación con devolución garantizada hasta 4 horas antes del partido.</li>
+      </ul>
+    </div>
+
+    <div class="wireframe-card">
+      <span class="wireframe-tag">WIREFRAME 3: PANEL DE ADMINISTRACIÓN DE TURNOS Y FINANZAS</span>
+      <h3>Centro de Mando para Recepción y Dueño</h3>
+      <p>Dashboard operativo para supervisar la jornada diaria y monitorear ingresos.</p>
+      <ul>
+        <li><strong>KPI Cards:</strong> Total facturado del día, porcentaje de ocupación, check-in pendientes y salas split activas.</li>
+        <li><strong>Tabla Operativa en Vivo:</strong> Listado cronológico de turnos del día con botones de acción rápida (Validar Llegada, Registrar Cobro Presencial y Bloqueo de Emergencia).</li>
+      </ul>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div>Plataforma Web Futbolito 7 — Documentación Oficial de Ingeniería de Software</div>
+      <div>Página 2 de 2 • Azure DevOps / Sprint 1</div>
+    </div>
+  </div>
+
+</body>
+</html>

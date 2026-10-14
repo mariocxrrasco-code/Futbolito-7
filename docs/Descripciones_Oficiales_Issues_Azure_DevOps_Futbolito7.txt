@@ -1,0 +1,178 @@
+================================================================================
+FUTBOLITO 7 — TEXTOS EXACTOS PARA LA CAJA 'DESCRIPTION' DE CADA ISSUE
+Instrucción: Copia y pega el bloque correspondiente dentro de Azure Boards.
+Formato evaluado por la pauta: Quién / Con qué / Cómo (Criterio 9)
+================================================================================
+
+################################################################################
+## SPRINT 1 (01 Sep – 26 Sep): Setup, Fundamentos y Arquitectura
+################################################################################
+
+--------------------------------------------------------------------------------
+[Issue 2] Definir el Alcance y Objetivos del Proyecto
+Prioridad en Azure: 1 (Crítica) | Responsable: Iván Alejandro
+--------------------------------------------------------------------------------
+Quién: Analista de Sistemas / Product Owner.
+Con qué: Microsoft Teams, Cuestionarios de Levantamiento y Azure Boards.
+Cómo: Identificar a los stakeholders de complejos deportivos, delimitar las fronteras de la solución (in-scope / out-of-scope) y formalizar los objetivos de negocio para la plataforma web de arriendos.
+
+--------------------------------------------------------------------------------
+[Issue 3] Levantar Requerimientos Funcionales y No Funcionales
+Prioridad en Azure: 1 (Crítica) | Responsable: Paulo Alegría
+--------------------------------------------------------------------------------
+Quién: Analista Funcional / Ingeniero de Requerimientos.
+Con qué: Azure DevOps Wiki, estándar IEEE 830 y criterios de aceptación Gherkin.
+Cómo: Especificar detalladamente los 10 requerimientos funcionales (bloques horarios, split payment, matchmaking 6v6, tarifas punta/valle) y 6 no funcionales (concurrencia ACID, rendimiento HTMX <300ms y privacidad PII).
+
+--------------------------------------------------------------------------------
+[Issue 4] Diseñar el Modelo de Datos Relacional (DER)
+Prioridad en Azure: 1 (Crítica) | Responsable: Eliezer Zenteno / Iván Alejandro
+--------------------------------------------------------------------------------
+Quién: Arquitecto de Datos / Ingeniero de Software.
+Con qué: draw.io / dbdiagram.io y PostgreSQL 16.
+Cómo: Diseñar el modelo entidad-relación (DER) conceptual y lógico para las entidades Complejo, Cancha, Tarifa, BloqueHorario, Reserva, Pago, SplitPayment y AuditLog, definiendo claves primarias, foráneas y restricciones de integridad.
+
+--------------------------------------------------------------------------------
+[Issue 5] Diseñar Wireframes y Flujo de Navegación (UI/UX)
+Prioridad en Azure: 2 (Alta) | Responsable: Mario Carrasco
+--------------------------------------------------------------------------------
+Quién: Diseñador UI/UX / Desarrollador Frontend.
+Con qué: Figma, draw.io y prototipado rápido con Tailwind CSS.
+Cómo: Diseñar el User Journey y los wireframes responsivos para el calendario semanal de disponibilidad, el checkout interactivo con división de cuenta y el panel de control de turnos para recepción.
+
+--------------------------------------------------------------------------------
+[Issue 6] Inicializar Repositorio y Entorno Base
+Prioridad en Azure: 1 (Crítica) | Responsable: Paulo Alegría
+--------------------------------------------------------------------------------
+Quién: Desarrollador Backend / DevOps.
+Con qué: Git, Azure Repos, Python 3.12 y Django 6.1.
+Cómo: Crear el repositorio remoto en Azure Repos, configurar la estrategia de ramas GitFlow, estructurar el entorno virtual venv, generar el archivo requirements.txt y realizar el commit inicial de la arquitectura base.
+
+--------------------------------------------------------------------------------
+[Issue 7] Configurar Frontend Base en Django
+Prioridad en Azure: 2 (Alta) | Responsable: Mario Carrasco / Iván Alejandro
+--------------------------------------------------------------------------------
+Quién: Desarrollador Frontend.
+Con qué: Django Templates, Tailwind CSS 3.4+ y HTMX 1.9+.
+Cómo: Configurar directorios static y templates, crear la plantilla maestra base.html con Navbar y Footer responsivos, e integrar scripts de HTMX y Alpine.js con soporte de tokens CSRF.
+
+--------------------------------------------------------------------------------
+[Issue 8] Configurar Conexión a Base de Datos PostgreSQL
+Prioridad en Azure: 1 (Crítica) | Responsable: Mario Carrasco / Iván Alejandro
+--------------------------------------------------------------------------------
+Quién: Administrador de Base de Datos (DBA) / Desarrollador Backend.
+Con qué: PostgreSQL 16, driver Psycopg 3 (3.3) y django-environ 0.14.0.
+Cómo: Instalar y configurar la instancia de base de datos relacional, parametrizar credenciales seguras en variables de entorno .env en settings.py y validar la ejecución de las migraciones nativas de Django.
+
+################################################################################
+## SPRINT 2 (28 Sep – 24 Oct): Canchas, Tarifas y Calendario HTMX
+################################################################################
+
+--------------------------------------------------------------------------------
+[Issue S2-1] Módulo y CRUD de Canchas y Complejos
+Prioridad en Azure: 1 (Crítica) | Responsable: Iván Alejandro
+--------------------------------------------------------------------------------
+Quién: Desarrollador Backend / DBA.
+Con qué: Python 3.12, Django 6.1 ORM, Pillow 12.3.0 y Django REST Framework 3.18.
+Cómo: Implementar los modelos Complejo y Cancha con atributos físicos (tipo de superficie, iluminación, techada/aire libre), carga y optimización de imágenes, y vistas CRUD protegidas en el panel administrativo.
+
+--------------------------------------------------------------------------------
+[Issue S2-2] Motor de Tarifas Diferenciadas (Punta vs. Valle)
+Prioridad en Azure: 2 (Alta) | Responsable: Paulo Alegría
+--------------------------------------------------------------------------------
+Quién: Desarrollador Backend / Lógica de Negocio.
+Con qué: Python 3.12, Django ORM y django-filter 26.1.
+Cómo: Desarrollar el modelo Tarifa y el servicio de cálculo dinámico para aplicar precios diferenciados según día de la semana y franja horaria (horario valle diurno vs. horario punta nocturno y fines de semana).
+
+--------------------------------------------------------------------------------
+[Issue S2-3] Calendario Semanal Interactivo con HTMX
+Prioridad en Azure: 1 (Crítica) | Responsable: Mario Carrasco
+--------------------------------------------------------------------------------
+Quién: Desarrollador Frontend / UI Specialist.
+Con qué: Django Templates, Tailwind CSS y HTMX.
+Cómo: Maquetar la grilla horaria semanal (lunes a domingo, 08:00 a 23:00) e implementar filtros asíncronos por cancha y fecha para actualizar la disponibilidad en tiempo real sin recargar la página web.
+
+################################################################################
+## SPRINT 3 (26 Oct – 21 Nov): Reservas, Concurrencia y Matchmaking
+################################################################################
+
+--------------------------------------------------------------------------------
+[Issue S3-1] Motor de Reservas y Control de Concurrencia
+Prioridad en Azure: 1 (Crítica) | Responsable: Paulo Alegría
+--------------------------------------------------------------------------------
+Quién: Desarrollador Backend / Ingeniero de Software.
+Con qué: Python 3.12, Django 6.1 ORM, PostgreSQL 16 y Psycopg 3.3.
+Cómo: Implementar transacciones atómicas (transaction.atomic) y bloqueo pesimista select_for_update() sobre la entidad BloqueHorario para garantizar cero solapamientos de arriendos en reservas simultáneas.
+
+--------------------------------------------------------------------------------
+[Issue S3-2] Lobby de Matchmaking 6v6 y Algoritmo de Balanceo
+Prioridad en Azure: 2 (Alta) | Responsable: Eliezer Zenteno
+--------------------------------------------------------------------------------
+Quién: Desarrollador Full Stack / Backend.
+Con qué: Python 3.12, Django ORM, HTMX y Alpine.js.
+Cómo: Crear salas públicas para partidos abiertos de 12 cupos individuales, integrando un algoritmo en Python que distribuye aleatoriamente y balancea a los jugadores en Equipo A (6) y Equipo B (6) al completarse la sala.
+
+--------------------------------------------------------------------------------
+[Issue S3-3] Políticas de Cancelación y Liberación Automática
+Prioridad en Azure: 3 (Media) | Responsable: Iván Alejandro
+--------------------------------------------------------------------------------
+Quién: Desarrollador Backend.
+Con qué: Django 6.1 ORM y tareas programadas en segundo plano.
+Cómo: Programar la regla de anulación de arriendos con un mínimo de 4 horas de anticipación para reembolso y habilitar la liberación automática de bloques temporales impagos tras 10 minutos de inactividad.
+
+################################################################################
+## SPRINT 4 (23 Nov – 12 Dic): Pagos, Split Payment y Panel de Recepción
+################################################################################
+
+--------------------------------------------------------------------------------
+[Issue S4-1] Integración de Pasarela de Pagos (Webpay / Stripe)
+Prioridad en Azure: 1 (Crítica) | Responsable: Eliezer Zenteno
+--------------------------------------------------------------------------------
+Quién: Desarrollador Full Stack / Especialista en Integraciones.
+Con qué: Python SDK de pagos (Transbank Webpay Plus / Stripe), Django REST Framework y HTTPS.
+Cómo: Configurar la pasarela de pagos en línea, crear endpoints seguros para manejo de webhooks/callbacks de confirmación y generar comprobantes digitales con código QR de verificación.
+
+--------------------------------------------------------------------------------
+[Issue S4-2] Sistema de Split Payment (División de Pagos 6v6)
+Prioridad en Azure: 2 (Alta) | Responsable: Mario Carrasco / Paulo Alegría
+--------------------------------------------------------------------------------
+Quién: Desarrollador Frontend y Backend.
+Con qué: Python 3.12, Alpine.js, Django Templates y API de mensajería (WhatsApp links).
+Cómo: Desarrollar el generador de 12 tokens de pago individuales con temporizador de expiración de 12 horas, permitiendo que cada jugador pague su cuota por separado hasta confirmar la reserva total.
+
+--------------------------------------------------------------------------------
+[Issue S4-3] Panel de Turnos en Recepción y Check-in QR
+Prioridad en Azure: 2 (Alta) | Responsable: Iván Alejandro / Mario Carrasco
+--------------------------------------------------------------------------------
+Quién: Desarrollador Full Stack.
+Con qué: Django Templates, Tailwind CSS, Alpine.js y lector QR HTML5.
+Cómo: Construir el centro de comando operativo para el recepcionista, permitiendo validar la llegada presencial en cancha escaneando el código QR y registrar cobros manuales en efectivo o transferencia.
+
+################################################################################
+## SPRINT 5 (14 Dic – 18 Dic): Auditoría, Métricas Contables y Despliegue
+################################################################################
+
+--------------------------------------------------------------------------------
+[Issue S5-1] Middleware de Auditoría y Enmascaramiento PII
+Prioridad en Azure: 1 (Crítica) | Responsable: Paulo Alegría
+--------------------------------------------------------------------------------
+Quién: Especialista en Ciberseguridad y Backend.
+Con qué: Middleware personalizado en Django 6.1 y algoritmos de enmascaramiento en Python.
+Cómo: Interceptar y registrar en el modelo AuditLog toda operación crítica sobre reservas y cobros, aplicando algoritmos de anonimización sobre datos sensibles (RUT, correos y teléfonos) para cumplir con leyes de protección de datos.
+
+--------------------------------------------------------------------------------
+[Issue S5-2] Dashboard Financiero y Métricas de Ocupación
+Prioridad en Azure: 2 (Alta) | Responsable: Iván Alejandro
+--------------------------------------------------------------------------------
+Quién: Desarrollador Backend / Analista de Datos.
+Con qué: Django ORM (agregaciones Sum, Count, Avg), Tailwind CSS y Chart.js/Alpine.
+Cómo: Diseñar vistas y gráficos gerenciales para calcular ingresos brutos por cancha, porcentaje de ocupación mensual y franjas horarias de mayor demanda, con opción de exportación de balances.
+
+--------------------------------------------------------------------------------
+[Issue S5-3] Integración CI/CD, Despliegue y Cierre de Proyecto
+Prioridad en Azure: 1 (Crítica) | Responsable: Eliezer Zenteno
+--------------------------------------------------------------------------------
+Quién: Ingeniero DevOps / Product Owner.
+Con qué: Azure Pipelines (YAML), Azure App Service y Azure Database for PostgreSQL.
+Cómo: Configurar la canalización de integración continua (CI) para ejecución automática de pruebas unitarias y empaquetar el despliegue continuo (CD) hacia el entorno productivo en la nube para la entrega final del 18 de diciembre.
+

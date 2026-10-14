@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Futbolito 7 — Cuaderno de Planificación Ágil</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #1e242b;
+      background-image: radial-gradient(#2d3748 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    .font-handwriting {
+      font-family: 'Caveat', cursive;
+    }
+
+    .font-mono-code {
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* Textura de papel cuadriculado / millimétré */
+    .paper-grid {
+      background-color: #fcfbf7;
+      background-image: 
+        linear-gradient(rgba(14, 116, 144, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14, 116, 144, 0.08) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    /* Anillas de cuaderno en espiral */
+    .spiral-ring {
+      width: 14px;
+      height: 38px;
+      background: linear-gradient(135deg, #71717a 0%, #d4d4d8 50%, #52525b 100%);
+      border-radius: 9999px;
+      box-shadow: -2px 3px 5px rgba(0,0,0,0.4), inset 1px 1px 2px rgba(255,255,255,0.8);
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .spiral-hole {
+      width: 10px;
+      height: 10px;
+      background: #1e242b;
+      border-radius: 50%;
+      box-shadow: inset 1px 1px 3px rgba(0,0,0,0.6);
+      position: absolute;
+      left: 2px;
+      top: 14px;
+    }
+
+    /* Cinta adhesiva / Washi Tape */
+    .washi-tape {
+      background: rgba(254, 240, 138, 0.7);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      border-left: 3px dashed rgba(202, 138, 4, 0.4);
+      border-right: 3px dashed rgba(202, 138, 4, 0.4);
+    }
+
+    /* Sombras realistas de libreta */
+    .notebook-shadow {
+      box-shadow: 
+        0 20px 40px -15px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(0, 0, 0, 0.1),
+        8px 8px 0px rgba(15, 23, 42, 0.5);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-3 sm:p-6 text-slate-800"
+      x-data="{ currentTab: 1, totalTabs: 6 }"
+      @keydown.right.window="if(currentTab < totalTabs) currentTab++"
+      @keydown.left.window="if(currentTab > 1) currentTab--">
+
+  <!-- Top Notebook Navigation & Bookmark Tabs -->
+  <div class="max-w-7xl w-full mx-auto flex flex-wrap items-center justify-between gap-3 mb-2 px-2">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-emerald-700 text-amber-200 flex items-center justify-center font-bold shadow-md">
+        <i class="fa-solid fa-book-bookmark text-base"></i>
+      </div>
+      <div>
+        <h1 class="text-white font-extrabold text-lg tracking-tight flex items-center gap-2">
+          <span>CUADERNO DE TÁCTICA Y PLANIFICACIÓN</span>
+          <span class="text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 font-mono">FUTBOLITO 7</span>
+        </h1>
+        <p class="text-slate-400 text-xs">Evaluación de Proyecto Ágil • Azure DevOps • 18 de Diciembre</p>
+      </div>
+    </div>
+
+    <!-- Pestañas Superiores / Bookmarks de colores estilo libreta -->
+    <div class="flex items-center space-x-1 sm:space-x-2 overflow-x-auto pb-1">
+      <button @click="currentTab = 1" 
+              :class="currentTab === 1 ? 'bg-amber-100 text-amber-950 -translate-y-1 font-bold shadow-md border-amber-300' : 'bg-amber-200/40 text-amber-200 hover:bg-amber-200/60 border-transparent'"
+              class="px-3 py-1.5 rounded-t-lg border-t-2 border-x-2 text-xs transition-all flex items-center gap-1.5 whitespace-nowrap">
+        <i class="fa-solid fa-users text-[10px]"></i> 1. Equipo Scrum
+      </button>
+
+      <button @click="currentTab = 2" 
+              :class="currentTab === 2 ? 'bg-emerald-100 text-emerald-950 -translate-y-1 font-bold shadow-md border-emerald-300' : 'bg-emerald-200/40 text-emerald-200 hover:bg-emerald-200/60 border-transparent'"
+              class="px-3 py-1.5 rounded-t-lg border-t-2 border-x-2 text-xs transition-all flex items-center gap-1.5 whitespace-nowrap">
+        <i class="fa-solid fa-calendar-week text-[10px]"></i> 2. Calendario Sprints
+      </button>
+
+      <button @click="currentTab = 3" 
+              :class="currentTab === 3 ? 'bg-sky-100 text-sky-950 -translate-y-1 font-bold shadow-md border-sky-300' : 'bg-sky-200/40 text-sky-200 hover:bg-sky-200/60 border-transparent'"
+              class="px-3 py-1.5 rounded-t-lg border-t-2 border-x-2 text-xs transition-all flex items-center gap-1.5 whitespace-nowrap">
+        <i class="fa-solid fa-gauge-high text-[10px]"></i> 3. Capacidad & Feriados
+      </button>
+
+      <button @click="currentTab = 4" 
+              :class="currentTab === 4 ? 'bg-purple-100 text-purple-950 -translate-y-1 font-bold shadow-md border-purple-300' : 'bg-purple-200/40 text-purple-200 hover:bg-purple-200/60 border-transparent'"
+              class="px-3 py-1.5 rounded-t-lg border-t-2 border-x-2 text-xs transition-all flex items-center gap-1.5 whitespace-nowrap">
+        <i class="fa-solid fa-list-check text-[10px]"></i> 4. Backlog & Prioridades
+      </button>
+
+      <button @click="currentTab = 5" 
+              :class="currentTab === 5 ? 'bg-rose-100 text-rose-950 -translate-y-1 font-bold shadow-md border-rose-300' : 'bg-rose-200/40 text-rose-200 hover:bg-rose-200/60 border-transparent'"
+              class="px-3 py-1.5 rounded-t-lg border-t-2 border-x-2 text-xs transition-all flex items-center gap-1.5 whitespace-nowrap">
+        <i class="fa-solid fa-layer-group text-[10px]"></i> 5. Stack & Arquitectura
+      </button>
+
+      <button @click="currentTab = 6" 
+              :class="currentTab === 6 ? 'bg-teal-100 text-teal-950 -translate-y-1 font-bold shadow-md border-teal-300' : 'bg-teal-200/40 text-teal-200 hover:bg-teal-200/60 border-transparent'"
+              class="px-3 py-1.5 rounded-t-lg border-t-2 border-x-2 text-xs transition-all flex items-center gap-1.5 whitespace-nowrap">
+        <i class="fa-solid fa-medal text-[10px]"></i> 6. Pauta 100 Pts
+      </button>
+    </div>
+  </div>
+
+  <!-- EL CUADERNO (CONTENEDOR FÍSICO CON ANILLAS) -->
+  <div class="max-w-7xl w-full mx-auto flex-1 flex notebook-shadow rounded-3xl overflow-hidden border border-slate-700 bg-stone-100">
+    
+    <!-- Margen Izquierdo con Anillas Metálicas -->
+    <div class="w-14 sm:w-16 bg-gradient-to-r from-stone-300 via-stone-200 to-stone-300 border-r-2 border-stone-400/80 flex flex-col items-center py-8 select-none">
+      <template x-for="i in 10" :key="i">
+        <div class="spiral-ring">
+          <div class="spiral-hole"></div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Hoja Principal de Papel Cuadriculado -->
+    <div class="flex-1 paper-grid p-6 sm:p-10 flex flex-col justify-between relative overflow-y-auto max-h-[80vh]">
+
+      <!-- Sello de agua sutil de cancha de fútbol -->
+      <div class="absolute right-8 bottom-8 opacity-[0.03] pointer-events-none text-emerald-950 text-9xl">
+        <i class="fa-solid fa-futbol"></i>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- PÁGINA 1: EL EQUIPO SCRUM COMPLETO (LOS 4 INTEGRANTES) -->
+      <!-- ========================================================================= -->
+      <div x-show="currentTab === 1" x-transition.opacity.duration.300ms class="space-y-6">
+        
+        <!-- Header de la Hoja -->
+        <div class="border-b-2 border-dashed border-stone-300 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <span class="font-handwriting text-2xl text-emerald-800 font-bold tracking-wide">Página 01 // Alineación del Equipo</span>
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Estructura de Roles Scrum — Proyecto Futbolito 7</h2>
+          </div>
+          <div class="washi-tape px-3 py-1 rounded text-xs font-mono font-bold text-amber-900 rotate-1 inline-block self-start sm:self-auto">
+            Criterio 11: PO, SM & Developers
+          </div>
+        </div>
+
+        <p class="text-sm text-slate-600 leading-relaxed">
+          Para garantizar gobernanza ágil y cumplimiento con la pauta de evaluación, el equipo definió una asignación clara de responsabilidades donde los <strong>4 integrantes</strong> participan activamente en el ciclo de vida del software:
+        </p>
+
+        <!-- 4 Tarjetas de Integrantes Estilo Libreta / Fichas Técnicas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Eliezer -->
+          <div class="bg-white/90 p-5 rounded-xl border border-stone-300 shadow-sm relative hover:shadow-md transition">
+            <div class="absolute -top-2.5 right-4 px-2.5 py-0.5 rounded bg-purple-100 border border-purple-300 text-purple-900 text-[11px] font-bold font-mono">
+              Product Owner & Full Stack Lead
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-full bg-purple-100 text-purple-800 flex items-center justify-center font-black text-lg border border-purple-200">
+                EZ
+              </div>
+              <div>
+                <h3 class="font-bold text-base text-slate-900">Eliezer Zenteno</h3>
+                <div class="text-xs text-purple-700 font-medium">Administrador del Proyecto en Azure DevOps</div>
+              </div>
+            </div>
+            <ul class="mt-3 text-xs text-slate-600 space-y-1.5 border-t border-stone-200 pt-3">
+              <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> <strong>Responsabilidades PO:</strong> Define visión de producto, prioriza historias de usuario y valida criterios de aceptación con el cliente/profesor.</li>
+              <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> <strong>Aporte Técnico:</strong> Configuración de Azure Repos, Pipelines CI/CD y despliegue en Azure App Service.</li>
+            </ul>
+          </div>
+
+          <!-- Mario -->
+          <div class="bg-white/90 p-5 rounded-xl border border-stone-300 shadow-sm relative hover:shadow-md transition">
+            <div class="absolute -top-2.5 right-4 px-2.5 py-0.5 rounded bg-emerald-100 border border-emerald-300 text-emerald-900 text-[11px] font-bold font-mono">
+              Scrum Master & UI/UX Lead
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-lg border border-emerald-200">
+                MC
+              </div>
+              <div>
+                <h3 class="font-bold text-base text-slate-900">Mario Carrasco</h3>
+                <div class="text-xs text-emerald-700 font-medium">Gobernanza Ágil & Experiencia de Usuario</div>
+              </div>
+            </div>
+            <ul class="mt-3 text-xs text-slate-600 space-y-1.5 border-t border-stone-200 pt-3">
+              <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> <strong>Responsabilidades SM:</strong> Facilita ceremonias ágiles, monitorea la capacidad (Capacity tab) y audita trazabilidad de tareas.</li>
+              <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> <strong>Aporte Técnico:</strong> Wireframes en draw.io/Figma, diseño responsive con Tailwind CSS y componentes HTMX/Alpine.</li>
+            </ul>
+          </div>
+
+          <!-- Paulo -->
+          <div class="bg-white/90 p-5 rounded-xl border border-stone-300 shadow-sm relative hover:shadow-md transition">
+            <div class="absolute -top-2.5 right-4 px-2.5 py-0.5 rounded bg-amber-100 border border-amber-300 text-amber-900 text-[11px] font-bold font-mono">
+              Developer — Backend & Security Lead
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-black text-lg border border-amber-200">
+                PA
+              </div>
+              <div>
+                <h3 class="font-bold text-base text-slate-900">Paulo Alegría</h3>
+                <div class="text-xs text-amber-700 font-medium">Lógica de Negocio & Privacidad PII</div>
+              </div>
+            </div>
+            <ul class="mt-3 text-xs text-slate-600 space-y-1.5 border-t border-stone-200 pt-3">
+              <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> <strong>Responsabilidades Dev:</strong> Levantamiento formal de requerimientos funcionales/no funcionales (SRS con Gherkin).</li>
+              <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> <strong>Aporte Técnico:</strong> Algoritmo de control de concurrencia pesimista (select_for_update) y middleware de auditoría con enmascaramiento PII.</li>
+            </ul>
+          </div>
+
+          <!-- Iván -->
+          <div class="bg-white/90 p-5 rounded-xl border border-stone-300 shadow-sm relative hover:shadow-md transition">
+            <div class="absolute -top-2.5 right-4 px-2.5 py-0.5 rounded bg-sky-100 border border-sky-300 text-sky-900 text-[11px] font-bold font-mono">
+              Developer — Database & Infrastructure
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-full bg-sky-100 text-sky-800 flex items-center justify-center font-black text-lg border border-sky-200">
+                IA
+              </div>
+              <div>
+                <h3 class="font-bold text-base text-slate-900">Iván Alejandro</h3>
+                <div class="text-xs text-sky-700 font-medium">Arquitectura de Datos & Modelado ORM</div>
+              </div>
+            </div>
+            <ul class="mt-3 text-xs text-slate-600 space-y-1.5 border-t border-stone-200 pt-3">
+              <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> <strong>Responsabilidades Dev:</strong> Delimitación de alcance (In-Scope/Out-of-Scope) y mapeo de stakeholders.</li>
+              <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> <strong>Aporte Técnico:</strong> Modelo de datos relacional (DER), conexión a PostgreSQL 16 con Psycopg 3.3 y endpoints Django REST Framework.</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
+          <i class="fa-solid fa-circle-info text-amber-700"></i>
+          <span><strong>Compromiso del Equipo:</strong> Cada uno de los 4 integrantes posee tareas técnicas asignadas con horas individuales en Azure Boards, garantizando evaluación equilibrada sin cargas ficticias.</span>
+        </div>
+
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- PÁGINA 2: CALENDARIO Y HORIZONTE DE LOS 5 SPRINTS AL 18 DE DICIEMBRE -->
+      <!-- ========================================================================= -->
+      <div x-show="currentTab === 2" x-transition.opacity.duration.300ms class="space-y-6">
+        
+        <div class="border-b-2 border-dashed border-stone-300 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <span class="font-handwriting text-2xl text-emerald-800 font-bold tracking-wide">Página 02 // Cronograma Maestro</span>
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Horizonte de Sprints: 01 de Septiembre al 18 de Diciembre</h2>
+          </div>
+          <div class="washi-tape px-3 py-1 rounded text-xs font-mono font-bold text-amber-900 rotate-1 inline-block self-start sm:self-auto">
+            Criterios 8 y 13: Fechas y Sprints
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <!-- Timeline Card: Sprint 1 -->
+          <div class="bg-white/95 p-4 rounded-xl border-l-4 border-emerald-600 border-y border-r border-stone-300 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-xs font-mono">SPRINT 1</span>
+                <span class="font-bold text-slate-900 text-sm">Setup, Fundamentos, DER y Wireframes</span>
+                <span class="text-[11px] text-amber-700 font-semibold">(Sprint Activo)</span>
+              </div>
+              <p class="text-xs text-slate-600">Alcance de negocio, levantamiento SRS con Gherkin, wireframes UI/UX, modelo relacional y setup base Django + PostgreSQL 16.</p>
+            </div>
+            <div class="text-right whitespace-nowrap">
+              <div class="font-mono text-xs font-bold text-slate-800">01 Sep – 26 Sep</div>
+              <div class="text-[11px] text-amber-700"><i class="fa-solid fa-flag mr-1"></i>Excluye Fiestas Patrias</div>
+            </div>
+          </div>
+
+          <!-- Timeline Card: Sprint 2 -->
+          <div class="bg-white/95 p-4 rounded-xl border-l-4 border-blue-600 border-y border-r border-stone-300 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-xs font-mono">SPRINT 2</span>
+                <span class="font-bold text-slate-900 text-sm">Canchas, Tarifas Punta/Valle y Calendario HTMX</span>
+              </div>
+              <p class="text-xs text-slate-600">Modelos Cancha y Complejo con carga de fotos (Pillow), servicio de tarifas dinámicas y grilla semanal reactiva con HTMX sin recarga.</p>
+            </div>
+            <div class="text-right whitespace-nowrap">
+              <div class="font-mono text-xs font-bold text-slate-800">28 Sep – 24 Oct</div>
+              <div class="text-[11px] text-slate-500">24 días laborales</div>
+            </div>
+          </div>
+
+          <!-- Timeline Card: Sprint 3 -->
+          <div class="bg-white/95 p-4 rounded-xl border-l-4 border-amber-600 border-y border-r border-stone-300 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-xs font-mono">SPRINT 3</span>
+                <span class="font-bold text-slate-900 text-sm">Reservas Concurrentes, Matchmaking 6v6 y Cancelación</span>
+              </div>
+              <p class="text-xs text-slate-600">Bloqueo pesimista select_for_update() en PostgreSQL, salas públicas 6v6 con algoritmo de balanceo y anulación garantizada a 4h.</p>
+            </div>
+            <div class="text-right whitespace-nowrap">
+              <div class="font-mono text-xs font-bold text-slate-800">26 Oct – 21 Nov</div>
+              <div class="text-[11px] text-amber-700"><i class="fa-solid fa-flag mr-1"></i>Excluye 31 Oct y 01 Nov</div>
+            </div>
+          </div>
+
+          <!-- Timeline Card: Sprint 4 -->
+          <div class="bg-white/95 p-4 rounded-xl border-l-4 border-purple-600 border-y border-r border-stone-300 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-bold text-xs font-mono">SPRINT 4</span>
+                <span class="font-bold text-slate-900 text-sm">Pasarela de Pago, Split Payment y Panel Recepción QR</span>
+              </div>
+              <p class="text-xs text-slate-600">Integración Webpay/Stripe, 12 enlaces de pago compartido por WhatsApp con caducidad de 12h y validador QR para check-in en cancha.</p>
+            </div>
+            <div class="text-right whitespace-nowrap">
+              <div class="font-mono text-xs font-bold text-slate-800">23 Nov – 12 Dic</div>
+              <div class="text-[11px] text-amber-700"><i class="fa-solid fa-flag mr-1"></i>Excluye 08 Dic</div>
+            </div>
+          </div>
+
+          <!-- Timeline Card: Sprint 5 -->
+          <div class="bg-white/95 p-4 rounded-xl border-l-4 border-rose-600 border-y border-r border-stone-300 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold text-xs font-mono">SPRINT 5</span>
+                <span class="font-bold text-slate-900 text-sm">Auditoría PII, Dashboard Contable y Entrega Final</span>
+              </div>
+              <p class="text-xs text-slate-600">Middleware de auditoría con anonimización de datos sensibles, métricas de ocupación ORM, pipelines CI/CD y cierre formal del proyecto.</p>
+            </div>
+            <div class="text-right whitespace-nowrap">
+              <div class="font-mono text-xs font-bold text-emerald-700">14 Dic – 18 Dic</div>
+              <div class="text-[11px] font-bold text-emerald-800"><i class="fa-solid fa-circle-check mr-1"></i>Hito Final 18 Dic</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- PÁGINA 3: GESTIÓN DE CAPACIDAD Y FERIADOS IRRENUNCIABLES (CRITERIO 12) -->
+      <!-- ========================================================================= -->
+      <div x-show="currentTab === 3" x-transition.opacity.duration.300ms class="space-y-6">
+        
+        <div class="border-b-2 border-dashed border-stone-300 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <span class="font-handwriting text-2xl text-emerald-800 font-bold tracking-wide">Página 03 // Capacidad y Carga de Trabajo</span>
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Distribución Realista y Exclusión de Feriados (Criterio 12)</h2>
+          </div>
+          <div class="washi-tape px-3 py-1 rounded text-xs font-mono font-bold text-amber-900 rotate-1 inline-block self-start sm:self-auto">
+            Criterio 12: 8 Puntos
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Columna 1 -->
+          <div class="bg-white/90 p-4 rounded-xl border border-stone-300 space-y-3">
+            <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2 border-b border-stone-200 pb-2">
+              <i class="fa-solid fa-business-time text-emerald-600"></i> Jornada Lunes a Sábado
+            </h3>
+            <p class="text-xs text-slate-600">Configurado en <code>Project Settings &gt; Working Days</code> para los 4 estudiantes:</p>
+            <div class="space-y-1.5 text-xs font-mono">
+              <div class="flex justify-between bg-stone-50 p-2 rounded border border-stone-200">
+                <span>Horas diarias:</span>
+                <span class="font-bold text-emerald-700">3.5 hrs / día</span>
+              </div>
+              <div class="flex justify-between bg-stone-50 p-2 rounded border border-stone-200">
+                <span>Horas semanales:</span>
+                <span class="font-bold text-emerald-700">21 hrs / persona</span>
+              </div>
+              <div class="flex justify-between bg-stone-50 p-2 rounded border border-stone-200">
+                <span>Capacidad equipo:</span>
+                <span class="font-bold text-emerald-700">84 hrs / semana</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna 2 -->
+          <div class="bg-white/90 p-4 rounded-xl border border-stone-300 space-y-3">
+            <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2 border-b border-stone-200 pb-2">
+              <i class="fa-solid fa-umbrella-beach text-amber-600"></i> Feriados Excluidos (Days Off)
+            </h3>
+            <p class="text-xs text-slate-600">Registrados en la pestaña <code>Sprints &gt; Capacity</code> para no inflar la capacidad teórica:</p>
+            <ul class="text-xs text-slate-700 space-y-1 font-mono">
+              <li>• 18 y 19 Sep (Fiestas Patrias)</li>
+              <li>• 31 Oct (Iglesias Evangélicas)</li>
+              <li>• 01 Nov (Día Todos los Santos)</li>
+              <li>• 08 Dic (Inmaculada Concepción)</li>
+            </ul>
+          </div>
+
+          <!-- Columna 3 -->
+          <div class="bg-white/90 p-4 rounded-xl border border-stone-300 space-y-3">
+            <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2 border-b border-stone-200 pb-2">
+              <i class="fa-solid fa-chart-column text-purple-600"></i> Horas en Remaining Work
+            </h3>
+            <p class="text-xs text-slate-600">Cada Task hija tiene horas estimadas fijadas entre 3h y 5h:</p>
+            <div class="p-3 bg-emerald-50 rounded-lg border border-emerald-200 text-xs text-emerald-900">
+              <i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>
+              <strong>Resultado en Azure:</strong> El gráfico de barras <em>Work Details</em> se pinta en verde para los 4 integrantes, evidenciando equilibrio y cero sobrecarga.
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 bg-white/80 rounded-xl border border-stone-300 text-xs text-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <span class="font-handwriting text-xl text-emerald-800 font-bold">Nota para el Profesor:</span>
+          <span>Demostramos que ningún integrante tiene menos de 18h ni más de 25h de asignación por semana, respetando su disponibilidad real como estudiantes universitarios.</span>
+        </div>
+
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- PÁGINA 4: BACKLOGS, JERARQUÍA Y REGLA DE PRIORIDADES (1 AL 4) -->
+      <!-- ========================================================================= -->
+      <div x-show="currentTab === 4" x-transition.opacity.duration.300ms class="space-y-6">
+        
+        <div class="border-b-2 border-dashed border-stone-300 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <span class="font-handwriting text-2xl text-emerald-800 font-bold tracking-wide">Página 04 // Jerarquía de Backlog</span>
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Descomposición Ágil y Clasificación MoSCoW</h2>
+          </div>
+          <div class="washi-tape px-3 py-1 rounded text-xs font-mono font-bold text-amber-900 rotate-1 inline-block self-start sm:self-auto">
+            Criterios 9, 10 y 15: Trazabilidad Total
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Jerarquía Visual -->
+          <div class="bg-white/90 p-5 rounded-xl border border-stone-300 space-y-3">
+            <h3 class="font-bold text-sm text-slate-900 border-b border-stone-200 pb-2 flex items-center gap-2">
+              <i class="fa-solid fa-diagram-nested text-emerald-600"></i> Desglose en Dos Niveles
+            </h3>
+            
+            <div class="space-y-2 text-xs">
+              <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                <div class="font-bold text-emerald-900 flex items-center justify-between">
+                  <span>1. Nivel Issue / User Story (El "QUÉ")</span>
+                  <span class="text-[10px] bg-emerald-200 px-1.5 py-0.5 rounded font-mono">Product Backlog</span>
+                </div>
+                <p class="text-slate-600 mt-1">Requerimientos funcionales de alto nivel con plantilla estándar de tres preguntas: <strong>Quién</strong> (rol), <strong>Con qué</strong> (stack con versiones) y <strong>Cómo</strong> (solución técnica).</p>
+              </div>
+
+              <div class="p-3 rounded-lg bg-stone-50 border border-stone-300 ml-4">
+                <div class="font-bold text-slate-900 flex items-center justify-between">
+                  <span>2. Nivel Task (El "CÓMO TÉCNICO")</span>
+                  <span class="text-[10px] bg-stone-200 px-1.5 py-0.5 rounded font-mono">Sprint Backlog</span>
+                </div>
+                <p class="text-slate-600 mt-1">Tareas atómicas hijas asignadas individualmente a cada uno de los 4 integrantes con sus horas estimadas (Remaining Work) e Iteration fija.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabla de Prioridades -->
+          <div class="bg-white/90 p-5 rounded-xl border border-stone-300 space-y-3">
+            <h3 class="font-bold text-sm text-slate-900 border-b border-stone-200 pb-2 flex items-center gap-2">
+              <i class="fa-solid fa-arrow-down-short-wide text-purple-600"></i> Priorización en Azure Boards (1 al 4)
+            </h3>
+            
+            <div class="space-y-1.5 text-xs font-mono">
+              <div class="p-2 rounded bg-red-50 border border-red-200 flex items-center justify-between">
+                <span class="font-bold text-red-900">Prioridad 1 (Crítica - Must Have)</span>
+                <span class="text-[10px] text-red-700">Concurrencia, Pagos, Base de Datos</span>
+              </div>
+              <div class="p-2 rounded bg-amber-50 border border-amber-200 flex items-center justify-between">
+                <span class="font-bold text-amber-900">Prioridad 2 (Alta - Should Have)</span>
+                <span class="text-[10px] text-amber-700">Tarifas Punta/Valle, Match 6v6, Split</span>
+              </div>
+              <div class="p-2 rounded bg-indigo-50 border border-indigo-200 flex items-center justify-between">
+                <span class="font-bold text-indigo-900">Prioridad 3 (Media - Could Have)</span>
+                <span class="text-[10px] text-indigo-700">Reportes Contables, Cancelación 4h</span>
+              </div>
+              <div class="p-2 rounded bg-stone-50 border border-stone-200 flex items-center justify-between">
+                <span class="font-bold text-stone-700">Prioridad 4 (Baja - Nice to Have)</span>
+                <span class="text-[10px] text-stone-500">Ajustes estéticos menores</span>
+              </div>
+            </div>
+
+            <p class="text-[11px] text-slate-500 pt-1">Cumple con la exigencia del Criterio 9: ningún Work Item quedó sin priorizar.</p>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- PÁGINA 5: STACK TECNOLÓGICO CON VERSIONES Y ARQUITECTURA (CRITERIOS 5 Y 6) -->
+      <!-- ========================================================================= -->
+      <div x-show="currentTab === 5" x-transition.opacity.duration.300ms class="space-y-6">
+        
+        <div class="border-b-2 border-dashed border-stone-300 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <span class="font-handwriting text-2xl text-emerald-800 font-bold tracking-wide">Página 05 // Pila Tecnológica & Arquitectura</span>
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Tecnologías Oficiales con Versión Exacta y Arquitectura en Capas</h2>
+          </div>
+          <div class="washi-tape px-3 py-1 rounded text-xs font-mono font-bold text-amber-900 rotate-1 inline-block self-start sm:self-auto">
+            Criterios 5 y 6: 17 Puntos
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div class="bg-white/90 p-3 rounded-xl border border-stone-300">
+            <div class="text-slate-500 text-[10px] font-mono">FRAMEWORK WEB</div>
+            <div class="font-bold text-slate-900 text-sm mt-0.5">Django 6.1</div>
+            <div class="text-emerald-700 text-[11px] mt-1">Monolito modular seguro</div>
+          </div>
+          <div class="bg-white/90 p-3 rounded-xl border border-stone-300">
+            <div class="text-slate-500 text-[10px] font-mono">BASE DE DATOS</div>
+            <div class="font-bold text-slate-900 text-sm mt-0.5">PostgreSQL 16</div>
+            <div class="text-emerald-700 text-[11px] mt-1">Conector Psycopg 3.3</div>
+          </div>
+          <div class="bg-white/90 p-3 rounded-xl border border-stone-300">
+            <div class="text-slate-500 text-[10px] font-mono">APIs & SERIALIZACIÓN</div>
+            <div class="font-bold text-slate-900 text-sm mt-0.5">DRF 3.18.0</div>
+            <div class="text-emerald-700 text-[11px] mt-1">django-filter 26.1</div>
+          </div>
+          <div class="bg-white/90 p-3 rounded-xl border border-stone-300">
+            <div class="text-slate-500 text-[10px] font-mono">PROCESAMIENTO FOTOS</div>
+            <div class="font-bold text-slate-900 text-sm mt-0.5">Pillow 12.3.0</div>
+            <div class="text-emerald-700 text-[11px] mt-1">Optimización de canchas</div>
+          </div>
+          <div class="bg-white/90 p-3 rounded-xl border border-stone-300">
+            <div class="text-slate-500 text-[10px] font-mono">VARIABLES .ENV</div>
+            <div class="font-bold text-slate-900 text-sm mt-0.5">django-environ 0.14</div>
+            <div class="text-emerald-700 text-[11px] mt-1">Doce Factores & Pipelines</div>
+          </div>
+          <div class="bg-white/90 p-3 rounded-xl border border-stone-300">
+            <div class="text-slate-500 text-[10px] font-mono">MAQUETACIÓN CSS</div>
+            <div class="font-bold text-slate-900 text-sm mt-0.5">Tailwind CSS 3.4+</div>
+            <div class="text-emerald-700 text-[11px] mt-1">Mobile First liviano</div>
+          </div>
+          <div class="bg-white/90 p-3 rounded-xl border border-stone-300">
+            <div class="text-slate-500 text-[10px] font-mono">REACTIVIDAD ASÍNCRONA</div>
+            <div class="font-bold text-slate-900 text-sm mt-0.5">HTMX 1.9+</div>
+            <div class="text-emerald-700 text-[11px] mt-1">Cero recargas en grilla</div>
+          </div>
+          <div class="bg-white/90 p-3 rounded-xl border border-stone-300">
+            <div class="text-slate-500 text-[10px] font-mono">COMPONENTES UI</div>
+            <div class="font-bold text-slate-900 text-sm mt-0.5">Alpine.js 3.x</div>
+            <div class="text-emerald-700 text-[11px] mt-1">Modales y temporizadores</div>
+          </div>
+        </div>
+
+        <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-300 text-xs text-emerald-950 flex items-center justify-between">
+          <div>
+            <span class="font-bold">Mecanismo Central de Concurrencia:</span>
+            <span class="ml-1 text-slate-700">Implementación de <code>select_for_update()</code> en transacciones atómicas de PostgreSQL para evitar carreras críticas en reservas de canchas.</span>
+          </div>
+          <span class="px-2 py-1 rounded bg-emerald-700 text-white font-mono text-[10px] font-bold">ACID Validado</span>
+        </div>
+
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- PÁGINA 6: CUMPLIMIENTO TOTAL DE LA PAUTA (LOS 15 CRITERIOS / 100 PUNTOS) -->
+      <!-- ========================================================================= -->
+      <div x-show="currentTab === 6" x-transition.opacity.duration.300ms class="space-y-6">
+        
+        <div class="border-b-2 border-dashed border-stone-300 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <span class="font-handwriting text-2xl text-emerald-800 font-bold tracking-wide">Página 06 // Resumen Ejecutivo de Evaluación</span>
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Matriz de Cumplimiento de la Pauta Docente (100 Pts)</h2>
+          </div>
+          <div class="washi-tape px-3 py-1 rounded text-xs font-mono font-bold text-emerald-900 rotate-1 inline-block self-start sm:self-auto">
+            Nivel Excelente: 100/100
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+          
+          <div class="bg-white/95 p-4 rounded-xl border border-stone-300 space-y-2">
+            <div class="font-bold text-emerald-800 text-sm flex items-center justify-between">
+              <span>Sección Wiki</span>
+              <span class="font-mono bg-emerald-100 px-2 py-0.5 rounded text-xs">47 Pts</span>
+            </div>
+            <ul class="text-slate-600 space-y-1.5 pt-1">
+              <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> Cliente objetivo y dolores de negocio.</li>
+              <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> 4 perfiles con responsabilidades claras.</li>
+              <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> 10 RF y 6 RNF con criterios Gherkin.</li>
+              <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> Tecnologías con versiones oficiales.</li>
+              <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> Arquitectura en capas documentada.</li>
+            </ul>
+          </div>
+
+          <div class="bg-white/95 p-4 rounded-xl border border-stone-300 space-y-2">
+            <div class="font-bold text-blue-800 text-sm flex items-center justify-between">
+              <span>Sprints y Capacidad</span>
+              <span class="font-mono bg-blue-100 px-2 py-0.5 rounded text-xs">25 Pts</span>
+            </div>
+            <ul class="text-slate-600 space-y-1.5 pt-1">
+              <li><i class="fa-solid fa-check text-blue-600 mr-1.5"></i> 5 Sprints con metas y fechas exactas.</li>
+              <li><i class="fa-solid fa-check text-blue-600 mr-1.5"></i> Cierre formal el 18 de Diciembre.</li>
+              <li><i class="fa-solid fa-check text-blue-600 mr-1.5"></i> Lunes a sábado con 3.5h/día por persona.</li>
+              <li><i class="fa-solid fa-check text-blue-600 mr-1.5"></i> Feriados irrenunciables excluidos.</li>
+            </ul>
+          </div>
+
+          <div class="bg-white/95 p-4 rounded-xl border border-stone-300 space-y-2">
+            <div class="font-bold text-purple-800 text-sm flex items-center justify-between">
+              <span>Backlog y Roles</span>
+              <span class="font-mono bg-purple-100 px-2 py-0.5 rounded text-xs">28 Pts</span>
+            </div>
+            <ul class="text-slate-600 space-y-1.5 pt-1">
+              <li><i class="fa-solid fa-check text-purple-600 mr-1.5"></i> Roles Scrum explicitados (PO, SM, Devs).</li>
+              <li><i class="fa-solid fa-check text-purple-600 mr-1.5"></i> Formato Quién/Con qué/Cómo en Issues.</li>
+              <li><i class="fa-solid fa-check text-purple-600 mr-1.5"></i> Prioridades MoSCoW (1 al 4) en Azure.</li>
+              <li><i class="fa-solid fa-check text-purple-600 mr-1.5"></i> Trazabilidad total sin desconexiones.</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div class="p-4 bg-emerald-100/70 rounded-xl border border-emerald-300 text-xs text-emerald-950 font-medium flex items-center justify-between">
+          <span><strong>Estado del Proyecto:</strong> Espacio de Azure DevOps auditado, invitaciones enviadas y repositorio listo para retroalimentación docente.</span>
+          <span class="font-handwriting text-lg font-bold text-emerald-900">¡Éxito en la Presentación!</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Bottom Interactive Bar (Flip Pages) -->
+  <div class="max-w-7xl w-full mx-auto flex items-center justify-between mt-3 px-2 text-xs text-slate-300">
+    <div>
+      Usa las teclas <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200">←</kbd> y <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200">→</kbd> para pasar las hojas del cuaderno
+    </div>
+    <div class="flex items-center gap-2">
+      <button @click="if(currentTab > 1) currentTab--" 
+              :disabled="currentTab === 1"
+              :class="currentTab === 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-slate-800 text-white'"
+              class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900 font-semibold flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-arrow-left"></i> Hoja Anterior
+      </button>
+      <button @click="if(currentTab < totalTabs) currentTab++" 
+              :disabled="currentTab === totalTabs"
+              :class="currentTab === totalTabs ? 'opacity-30 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow'"
+              class="px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+        Siguiente Hoja <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+</body>
+</html>

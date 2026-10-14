@@ -1,0 +1,15 @@
+PROYECTO: Futbolito 7 — Plataforma Web de Gestión y Reservas de Canchas de Fútbol Amateur
+
+DIRECCIÓN DEL ESPACIO DE TRABAJO EN AZURE DEVOPS:
+https://dev.azure.com/eliezerzenteno/Futbolito%207
+
+EQUIPO DE PROYECTO Y ROLES SCRUM:
+- Eliezer Alejandro Zenteno Manríquez: Product Owner & Full Stack / DevOps Lead
+- Mario Alejandro Carrasco Calderón: Scrum Master & Frontend / UI-UX Lead
+- Paulo Benjamín Alegría Díaz: Development Team (Backend & Security Lead)
+- Iván Luis Alejandro: Development Team (Database & Infrastructure Lead)
+
+ESTRUCTURA DE PLANIFICACIÓN:
+- Metodología: Scrum adaptado a Azure DevOps (Boards, Backlogs, Capacity, Wiki)
+- Ciclo de Desarrollo: 5 Sprints (Septiembre a 18 de Diciembre)
+- Disponibilidad: Lunes a Sábado (3.5 hrs/día promedio, feriados irrenunciables excluidos)
