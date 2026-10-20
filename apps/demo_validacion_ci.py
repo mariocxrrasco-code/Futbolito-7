@@ -1,2 +1,2 @@
-def comprobar_pipeline(:
+def comprobar_pipeline():
     return True
