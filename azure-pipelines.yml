@@ -95,7 +95,7 @@ stages:
   - stage: DeployProduction
     displayName: '3. Empaquetado y Entrega Continua (CD)'
     dependsOn: TestAndBuild
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.SourceBranch'], 'refs/heads/demo/validacion-ci')))
     jobs:
       - job: PackageArtifact
         displayName: 'Empaquetado de Artefacto para Despliegue'
