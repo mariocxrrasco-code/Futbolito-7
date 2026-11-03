@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}Registro de Cliente — Futbolito 7{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+
+    <!-- ========================================================================= -->
+    <!-- TOP SECTION INTRO BANNER (STITCH SCREEN 4)                                -->
+    <!-- ========================================================================= -->
+    <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-stone-200 dark:border-stone-800 pb-6">
+        <div class="space-y-1.5">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-950/60 border border-orange-300/70 dark:border-orange-800 text-primary dark:text-secondary-container text-xs font-bold uppercase tracking-wider">
+                <span class="material-symbols-outlined text-sm">verified_user</span>
+                Portal de Identidad y Validación Deportiva
+            </div>
+            <h1 class="font-headline font-extrabold text-3xl sm:text-4xl lg:text-5xl uppercase tracking-tight text-on-surface dark:text-white">
+                REGISTRO Y ACCESO DE <span class="text-primary dark:text-secondary-container">JUGADORES</span>
+            </h1>
+        </div>
+        <p class="text-stone-600 dark:text-stone-400 text-xs sm:text-sm max-w-md leading-relaxed">
+            Para garantizar la disponibilidad real y evitar reservas fantasma, todo arriendo requiere una cuenta de jugador con correo electrónico validado.
+        </p>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- DUAL AUTHENTICATION SPLIT LAYOUT (LOGIN LEFT / REGISTER RIGHT)            -->
+    <!-- ========================================================================= -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+
+        <!-- ===================================================================== -->
+        <!-- LEFT COLUMN: INICIAR SESIÓN (5 COLS)                                  -->
+        <!-- ===================================================================== -->
+        <section class="lg:col-span-5 bg-surface-container-lowest dark:bg-stone-900 rounded-2xl shadow-md border border-stone-200/90 dark:border-stone-800 overflow-hidden flex flex-col justify-between">
+            <div>
+                <!-- Visual Athletic Header Strip -->
+                <div class="relative bg-tertiary text-on-tertiary p-6 sm:p-7 overflow-hidden border-b border-stone-800">
+                    <div class="absolute inset-0 opacity-25">
+                        <img alt="Textura de cancha sintética iluminada"
+                             class="w-full h-full object-cover object-center mix-blend-luminosity"
+                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvfx0RRH0eUex3LAUEd01J4IM8j0uGaSUrJVqK0y9PeMl_Ob50PA2CDXIZ2xIpoG03bdn2C9BvO3KIPk0NwZaWl4Aq7rx1JF01cs0uVhKFb9eiDEB5KrVlwuqTdo6VimqHTVeTKzV8NJe2Bw6ZI1fLaG5AEDerFkKT80SosTf3NZ9oNF9PTZY5leTZRpqfTmhR0QsNEXILkxwttz61e-JqQv3OZaag43aBRWnDOTEe"/>
+                        <div class="absolute inset-0 bg-gradient-to-r from-[#1c1917] via-[#1c1917]/90 to-transparent"></div>
+                    </div>
+
+                    <div class="relative z-10 space-y-2">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-secondary-container text-on-secondary-container font-headline font-extrabold text-xs uppercase tracking-widest">
+                            <span class="material-symbols-outlined text-sm">key</span>
+                            Acceso Oficial
+                        </span>
+                        <h2 class="font-headline font-extrabold text-3xl uppercase tracking-tight text-white">
+                            INICIAR SESIÓN
+                        </h2>
+                        <p class="text-stone-300 text-xs leading-relaxed">
+                            Ingresa con tus credenciales de Jugador o Administrador del complejo deportivo.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Login Form -->
+                <form method="POST" action="{% url 'reservas:login' %}" class="p-6 sm:p-8 space-y-5">
+                    {% csrf_token %}
+                    <div class="space-y-1.5">
+                        <label for="login-username" class="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+                            Usuario o Correo Electrónico
+                        </label>
+                        <div class="relative flex items-center">
+                            <span class="material-symbols-outlined absolute left-3.5 text-stone-400 text-lg pointer-events-none">person</span>
+                            <input id="login-username"
+                                   name="username"
+                                   type="text"
+                                   required
+                                   placeholder="jugador@correo.cl o nombre_usuario"
+                                   class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label for="login-password" class="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+                                Contraseña
+                            </label>
+                            <span class="text-xs font-semibold text-primary dark:text-secondary-container">Acceso Seguro</span>
+                        </div>
+                        <div class="relative flex items-center">
+                            <span class="material-symbols-outlined absolute left-3.5 text-stone-400 text-lg pointer-events-none">lock</span>
+                            <input id="login-password"
+                                   name="password"
+                                   type="password"
+                                   required
+                                   placeholder="••••••••••••"
+                                   class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
+                        </div>
+                    </div>
+
+                    <div class="pt-1">
+                        <button type="submit"
+                                class="w-full py-3.5 px-6 rounded-xl bg-tertiary hover:bg-stone-800 text-white font-headline font-bold text-base uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer">
+                            <span>Ingresar a Futbolito 7</span>
+                            <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Role Separation Security Footer -->
+            <div class="p-6 sm:px-8 bg-surface-container-low dark:bg-stone-800/70 border-t border-stone-200/90 dark:border-stone-800 space-y-2">
+                <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-200">
+                    <span class="material-symbols-outlined text-base text-primary">shield_person</span>
+                    <span>Separación Estricta de Perfiles</span>
+                </div>
+                <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
+                    El sistema distingue automáticamente entre cuentas de <strong>Perfil Cliente</strong> (habilitadas para reservar canchas) y cuentas de <strong>Perfil Administrador</strong> (mantenedor de canchas y aprobación de reservas).
+                </p>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- RIGHT COLUMN: CREAR CUENTA DE CLIENTE (7 COLS — ACTIVE)               -->
+        <!-- ===================================================================== -->
+        <section class="lg:col-span-7 bg-surface-container-lowest dark:bg-stone-900 rounded-2xl shadow-md border-2 border-primary/40 dark:border-primary/50 overflow-hidden flex flex-col justify-between">
+            <div>
+                <!-- Registration Card Header -->
+                <div class="bg-surface-container-low dark:bg-stone-800/80 p-6 sm:p-7 border-b border-stone-200/90 dark:border-stone-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="space-y-1.5">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-primary dark:text-secondary-container border border-orange-300/70 dark:border-orange-800 font-headline font-extrabold text-xs uppercase tracking-widest">
+                            <span class="material-symbols-outlined text-sm">sports_soccer</span>
+                            Perfil Oficial de Jugador / Cliente
+                        </span>
+                        <h2 class="font-headline font-extrabold text-3xl uppercase tracking-tight text-on-surface dark:text-white">
+                            CREAR CUENTA DE CLIENTE
+                        </h2>
+                        <p class="text-stone-600 dark:text-stone-400 text-xs">
+                            Completa tus datos para recibir el enlace de validación y tus documentos oficiales de reserva.
+                        </p>
+                    </div>
+
+                    <div class="shrink-0 bg-surface-container-lowest dark:bg-stone-900 px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 flex items-center gap-2.5 shadow-2xs">
+                        <div class="w-8 h-8 rounded-lg bg-amber-500/15 text-secondary dark:text-secondary-container flex items-center justify-center">
+                            <span class="material-symbols-outlined text-lg">mark_email_read</span>
+                        </div>
+                        <div class="text-xs">
+                            <span class="block font-bold text-stone-800 dark:text-stone-200">Validación Inmediata</span>
+                            <span class="text-[11px] text-stone-500">Compatible con Yopmail / Gmail</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registration Form -->
+                <form method="POST" action="{% url 'reservas:registro' %}" class="p-6 sm:p-8 space-y-5">
+                    {% csrf_token %}
+                    <div class="space-y-1.5">
+                        <label for="reg-fullname" class="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+                            Nombre Completo del Titular <span class="text-primary">*</span>
+                        </label>
+                        <div class="relative flex items-center">
+                            <span class="material-symbols-outlined absolute left-3.5 text-stone-400 text-lg pointer-events-none">badge</span>
+                            <input id="reg-fullname"
+                                   name="nombre_completo"
+                                   type="text"
+                                   required
+                                   autofocus
+                                   placeholder="Ej: Martín Rodríguez Soto"
+                                   class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <label for="reg-username" class="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+                                Nombre de Usuario <span class="text-primary">*</span>
+                            </label>
+                            <div class="relative flex items-center">
+                                <span class="material-symbols-outlined absolute left-3.5 text-stone-400 text-lg pointer-events-none">alternate_email</span>
+                                <input id="reg-username"
+                                       name="username"
+                                       type="text"
+                                       required
+                                       placeholder="martin_f7"
+                                       class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <div class="flex items-center justify-between">
+                                <label for="reg-rut" class="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+                                    RUT Chileno <span class="text-primary">*</span>
+                                </label>
+                                <span class="text-[10px] font-mono font-semibold text-stone-500">Enmascarado PII</span>
+                            </div>
+                            <div class="relative flex items-center">
+                                <span class="material-symbols-outlined absolute left-3.5 text-stone-400 text-lg pointer-events-none">id_card</span>
+                                <input id="reg-rut"
+                                       name="rut"
+                                       type="text"
+                                       required
+                                       placeholder="19.456.789-K"
+                                       class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-mono font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <label for="reg-email" class="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+                                Correo Electrónico <span class="text-primary">*</span>
+                            </label>
+                            <div class="relative flex items-center">
+                                <span class="material-symbols-outlined absolute left-3.5 text-stone-400 text-lg pointer-events-none">mail</span>
+                                <input id="reg-email"
+                                       name="email"
+                                       type="email"
+                                       required
+                                       placeholder="jugador@yopmail.com"
+                                       class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label for="reg-phone" class="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+                                Teléfono Móvil <span class="text-primary">*</span>
+                            </label>
+                            <div class="relative flex items-center">
+                                <span class="material-symbols-outlined absolute left-3.5 text-stone-400 text-lg pointer-events-none">smartphone</span>
+                                <input id="reg-phone"
+                                       name="telefono"
+                                       type="tel"
+                                       required
+                                       value="+56 9 "
+                                       placeholder="+56 9 8765 4321"
+                                       class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label for="reg-password" class="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+                                Contraseña de Seguridad <span class="text-primary">*</span>
+                            </label>
+                            <span class="text-[11px] font-medium text-stone-500">Mínimo 6 caracteres</span>
+                        </div>
+                        <div class="relative flex items-center">
+                            <span class="material-symbols-outlined absolute left-3.5 text-stone-400 text-lg pointer-events-none">password</span>
+                            <input id="reg-password"
+                                   name="password"
+                                   type="password"
+                                   minlength="6"
+                                   required
+                                   placeholder="Crea una contraseña segura (mín. 6 caracteres)"
+                                   class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
+                        </div>
+                    </div>
+
+                    <!-- Email Notification & Validation Callout -->
+                    <div class="p-4 rounded-xl bg-amber-50/90 dark:bg-stone-800 border border-amber-300/90 dark:border-stone-700 flex items-start gap-3">
+                        <span class="material-symbols-outlined text-secondary text-xl shrink-0 mt-0.5">forward_to_inbox</span>
+                        <div class="text-xs text-stone-700 dark:text-stone-300 leading-relaxed">
+                            <strong class="text-stone-900 dark:text-white font-bold block mb-0.5">Notificación de Documentos de Reserva por Correo</strong>
+                            Al completar tu registro recibirás un enlace de activación inmediata. En este mismo correo recibirás tus <strong>Documentos Oficiales de Reserva</strong> tanto en etapa <em>En Espera</em> como cuando el Administrador la marque como <em>Aceptada</em> o <em>Denegada</em>.
+                        </div>
+                    </div>
+
+                    <div class="pt-1">
+                        <button type="submit"
+                                class="w-full py-3.5 px-6 rounded-xl bg-primary hover:bg-primary-container text-white font-headline font-bold text-base uppercase tracking-wider transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+                            <span class="material-symbols-outlined text-lg">person_add</span>
+                            <span>Registrar Perfil de Cliente</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Bottom Compliance Strip -->
+            <div class="px-6 sm:px-8 py-4 bg-surface-container-low dark:bg-stone-800/70 border-t border-stone-200/90 dark:border-stone-800 flex flex-wrap items-center justify-between gap-2 text-xs text-stone-600 dark:text-stone-400">
+                <div class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm text-primary">encrypted</span>
+                    <span>Protección de Datos Personales Sensibles (Auditoría PII en <code class="font-mono text-stone-800 dark:text-stone-200">AuditLog</code>)</span>
+                </div>
+                <span class="font-semibold text-stone-700 dark:text-stone-300">Rol asignado: <code class="text-primary dark:text-secondary-container font-bold">CLIENTE</code></span>
+            </div>
+        </section>
+
+    </div>
+
+</div>
+{% endblock %}

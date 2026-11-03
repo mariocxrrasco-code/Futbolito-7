@@ -9,8 +9,9 @@ django-filter>=24.2
 Pillow>=10.4.0
 psycopg[binary]>=3.2.0
 
-# Servidor WSGI para producción
+# Servidor WSGI y archivos estáticos para producción (Render / Railway)
 gunicorn>=22.0.0
+whitenoise>=6.7.0
 
 # Herramientas de DevSecOps, Calidad y CI/CD (ISO 27034)
 flake8>=7.1.0

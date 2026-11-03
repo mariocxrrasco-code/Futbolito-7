@@ -1,194 +1,295 @@
 <!DOCTYPE html>
 <html lang="es" class="h-full" x-data="themeManager()" :class="{ 'dark': isDark }">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Futbolito 7 — Complejo Deportivo y Reservas de Fútbol Amateur{% endblock %}</title>
-    
-    <!-- Tipografía Atlética: Barlow Condensed + Plus Jakarta Sans -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS CDN -->
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{% block title %}FUTBOLITO 7 CLUB DEPORTIVO — Reservas en Tiempo Real{% endblock %}</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
+    <script id="tailwind-config">
         tailwind.config = {
-            darkMode: 'class',
+            darkMode: "class",
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                        athletic: ['"Barlow Condensed"', 'sans-serif'],
-                    },
                     colors: {
-                        stadium: {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            200: '#bbf7d0',
-                            500: '#16a34a',
-                            600: '#15803d',
-                            700: '#166534',
-                            800: '#14532d',
-                            900: '#052e16',
-                        },
-                        turf: {
-                            light: '#16a34a',
-                            dark: '#0f3d23',
-                            floodlight: '#f59e0b',
-                        }
+                        "outline-variant": "#e2bfb2",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#eae8e3",
+                        "inverse-on-surface": "#f2f1ec",
+                        "on-surface-variant": "#5a4138",
+                        "on-secondary-fixed-variant": "#6e3900",
+                        "on-surface": "#1b1c19",
+                        "surface-variant": "#e4e2dd",
+                        "surface-dim": "#dbdad5",
+                        "on-tertiary": "#ffffff",
+                        "secondary-container": "#fe932c",
+                        "on-tertiary-fixed": "#1e1b19",
+                        "on-tertiary-fixed-variant": "#4a4643",
+                        "background": "#fbf9f4",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#797371",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e4e2dd",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#ffdcc3",
+                        "error": "#ba1a1a",
+                        "on-background": "#1b1c19",
+                        "surface": "#fbf9f4",
+                        "primary-fixed": "#ffdbce",
+                        "tertiary-fixed-dim": "#ccc5c2",
+                        "surface-container": "#f0eee9",
+                        "surface-container-low": "#f5f3ee",
+                        "surface-bright": "#fbf9f4",
+                        "primary": "#a33900",
+                        "primary-container": "#cc4900",
+                        "on-primary-fixed": "#370e00",
+                        "surface-tint": "#a73a00",
+                        "outline": "#8e7166",
+                        "primary-fixed-dim": "#ffb599",
+                        "inverse-primary": "#ffb599",
+                        "on-tertiary-container": "#fffbff",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "tertiary-fixed": "#e9e1dd",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed-dim": "#ffb77d",
+                        "tertiary": "#605b58",
+                        "on-primary-container": "#fffbff",
+                        "on-secondary-fixed": "#2f1500",
+                        "on-secondary-container": "#663500",
+                        "secondary": "#904d00",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#30312e"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.125rem",
+                        lg: "0.25rem",
+                        xl: "0.5rem",
+                        full: "0.75rem"
+                    },
+                    spacing: {
+                        "space-md": "1rem",
+                        "space-lg": "1.5rem",
+                        "space-2xl": "4rem",
+                        "margin-desktop": "3rem",
+                        "gutter": "1rem",
+                        "space-xs": "0.25rem",
+                        "gutter-desktop": "1.5rem",
+                        "space-sm": "0.5rem",
+                        "space-xl": "2.5rem",
+                        "margin": "1rem",
+                        "margin-tablet": "2rem"
+                    },
+                    fontFamily: {
+                        "headline-lg": ["Barlow Condensed", "sans-serif"],
+                        "headline-lg-mobile": ["Barlow Condensed", "sans-serif"],
+                        "headline-sm": ["Barlow Condensed", "sans-serif"],
+                        "body-sm": ["Plus Jakarta Sans", "sans-serif"],
+                        "label-md": ["Barlow Condensed", "sans-serif"],
+                        "display-mobile": ["Barlow Condensed", "sans-serif"],
+                        "label-sm": ["Plus Jakarta Sans", "sans-serif"],
+                        "headline-md": ["Barlow Condensed", "sans-serif"],
+                        "body-md": ["Plus Jakarta Sans", "sans-serif"],
+                        "display": ["Barlow Condensed", "sans-serif"],
+                        "label-lg": ["Barlow Condensed", "sans-serif"],
+                        "body-lg": ["Plus Jakarta Sans", "sans-serif"],
+                        "athletic": ["Barlow Condensed", "sans-serif"]
+                    },
+                    fontSize: {
+                        "headline-lg": ["36px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "700" }],
+                        "headline-lg-mobile": ["28px", { lineHeight: "32px", letterSpacing: "0em", fontWeight: "700" }],
+                        "headline-sm": ["20px", { lineHeight: "24px", letterSpacing: "0.01em", fontWeight: "700" }],
+                        "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }],
+                        "label-md": ["15px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "700" }],
+                        "display-mobile": ["40px", { lineHeight: "44px", letterSpacing: "-0.01em", fontWeight: "800" }],
+                        "label-sm": ["11px", { lineHeight: "14px", letterSpacing: "0.02em", fontWeight: "600" }],
+                        "headline-md": ["26px", { lineHeight: "30px", letterSpacing: "0em", fontWeight: "700" }],
+                        "body-md": ["15px", { lineHeight: "22px", fontWeight: "400" }],
+                        "display": ["56px", { lineHeight: "60px", letterSpacing: "-0.02em", fontWeight: "800" }],
+                        "label-lg": ["18px", { lineHeight: "20px", letterSpacing: "0.04em", fontWeight: "700" }],
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "500" }]
                     }
                 }
             }
-        }
+        };
     </script>
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        .font-athletic {
-            font-family: 'Barlow Condensed', sans-serif;
-            letter-spacing: 0.02em;
-        }
-        /* Textura sutil de césped deportivo */
-        .turf-pattern {
-            background-image: radial-gradient(rgba(22, 163, 74, 0.12) 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-        .dark .turf-pattern {
-            background-image: radial-gradient(rgba(22, 163, 74, 0.08) 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
-        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        html, body { margin: 0; padding: 0; }
+        body { overscroll-behavior: none; }
+        /* Soporte Modo Oscuro Carbón/Terracota (Sin tonos azulados) */
+        html.dark body { background-color: #121210 !important; color: #f5f3ee !important; }
+        html.dark header { background-color: rgba(18, 18, 16, 0.92) !important; border-bottom: 1px solid #292524; }
+        html.dark .bg-surface { background-color: #121210 !important; }
+        html.dark .bg-surface-container-lowest { background-color: #1c1917 !important; color: #f5f3ee !important; }
+        html.dark .bg-surface-container-low { background-color: #171513 !important; }
+        html.dark .bg-surface-container { background-color: #24211e !important; }
+        html.dark .bg-surface-container-high { background-color: #2c2825 !important; }
+        html.dark .text-on-surface { color: #f5f3ee !important; }
+        html.dark .text-on-surface-variant { color: #d6d3d1 !important; }
+        html.dark .from-surface-container-low { --tw-gradient-from: #171513 var(--tw-gradient-from-position) !important; }
+        html.dark .to-surface-container-lowest { --tw-gradient-to: #1c1917 var(--tw-gradient-to-position) !important; }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body class="min-h-full flex flex-col antialiased transition-colors duration-200 bg-slate-50 text-slate-800 dark:bg-[#0b1120] dark:text-slate-100">
+<body class="bg-surface font-body-md text-body-md text-on-surface min-h-screen flex flex-col transition-colors duration-200">
 
-    <!-- Top Navigation Bar -->
-    <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 dark:border-slate-800/80 dark:bg-[#0b1120]/90 backdrop-blur-md transition-colors duration-200 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-20">
-                
-                <!-- Logo & Brand Deportivo -->
-                <div class="flex items-center space-x-3">
-                    <a href="{% url 'reservas:grilla' %}" class="flex items-center space-x-3 group">
-                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-green-900 flex items-center justify-center shadow-md shadow-emerald-600/30 group-hover:scale-105 transition-transform duration-200 border border-emerald-400/40">
-                            <!-- Icono de Cancha / Fútbol -->
-                            <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
-                                <path d="M2 12h20"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <div class="flex items-center space-x-1.5">
-                                <span class="text-2xl font-black uppercase text-slate-900 dark:text-white font-athletic tracking-wide">FUTBOLITO<span class="text-emerald-600 dark:text-emerald-400">7</span></span>
-                                <span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">PRO</span>
-                            </div>
-                            <span class="block text-[11px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Complejo Deportivo & Club</span>
-                        </div>
-                    </a>
+    <!-- TOP NAVBAR STITCH -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-surface/90 backdrop-blur-md shadow-[0_1px_8px_rgba(28,25,23,0.06)]">
+        <div class="h-20 max-w-[1280px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop flex items-center justify-between gap-space-md">
+            
+            <!-- Brand -->
+            <a href="{% url 'reservas:grilla' %}" class="flex items-center gap-space-md shrink-0 group">
+                <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm group-hover:bg-primary-container transition-colors">
+                    <span class="material-symbols-outlined text-[24px]">sports_soccer</span>
                 </div>
+                <span class="font-headline-sm text-headline-sm uppercase tracking-wide text-on-surface">
+                    FUTBOLITO 7 <span class="text-primary">CLUB DEPORTIVO</span>
+                </span>
+            </a>
 
-                <!-- Enlaces Centrales e Indicador en Vivo -->
-                <nav class="hidden lg:flex items-center space-x-6 text-sm font-semibold">
-                    <a href="{% url 'reservas:grilla' %}" class="flex items-center space-x-2 py-2 px-3.5 rounded-xl bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 transition">
-                        <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        <span>Arriendo de Canchas</span>
+            <!-- Navigation Links -->
+            <nav class="hidden xl:flex items-center gap-space-md">
+                <a href="{% url 'reservas:grilla' %}"
+                   class="uppercase tracking-wider transition-colors font-label-md text-label-md px-space-md py-space-sm rounded-lg {% if request.resolver_match.url_name == 'grilla' %}bg-primary-container text-on-primary-container{% else %}text-on-surface-variant hover:text-on-surface{% endif %}">
+                    Arriendo de Canchas
+                </a>
+                {% if user.is_authenticated %}
+                    {% if not user.is_staff and user.perfil.rol != 'ADMIN' %}
+                    <a href="{% url 'reservas:mis_reservas' %}"
+                       class="uppercase tracking-wider transition-colors font-label-md text-label-md px-space-md py-space-sm rounded-lg {% if request.resolver_match.url_name == 'mis_reservas' %}bg-primary-container text-on-primary-container{% else %}text-on-surface-variant hover:text-on-surface{% endif %}">
+                        Mis Reservas
                     </a>
-                    
-                    <div class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span class="text-slate-600 dark:text-slate-400 font-medium">Motor ACID: <strong class="text-slate-900 dark:text-white font-semibold">R-01 Activo</strong></span>
-                    </div>
-
-                    <div class="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400">
-                        <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <span>Atención: 09:00 - 23:00 hrs</span>
-                    </div>
-                </nav>
-
-                <!-- Acciones: Switch Modo Claro/Oscuro + Panel Admin -->
-                <div class="flex items-center space-x-3">
-                    
-                    <!-- Switch Interactivo Modo Claro / Modo Oscuro -->
-                    <button @click="toggleTheme()" 
-                            class="relative p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition duration-150 shadow-sm"
-                            title="Cambiar tema Claro / Oscuro">
-                        <!-- Icono Sol (Modo Claro) -->
-                        <svg x-show="!isDark" class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                        </svg>
-                        <!-- Icono Luna (Modo Oscuro) -->
-                        <svg x-show="isDark" class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                        </svg>
-                    </button>
-
-                    <!-- Acceso Admin / Staff -->
-                    <a href="/admin/" target="_blank" class="inline-flex items-center space-x-2 px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-xl bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 border border-slate-700 transition shadow-sm">
-                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        <span>Staff Admin</span>
+                    {% endif %}
+                    {% if user.is_staff or user.perfil.rol == 'ADMIN' %}
+                    <a href="{% url 'reservas:panel_admin' %}"
+                       class="uppercase tracking-wider transition-colors font-label-md text-label-md px-space-md py-space-sm rounded-lg {% if request.resolver_match.url_name == 'panel_admin' %}bg-primary-container text-on-primary-container{% else %}text-on-surface-variant hover:text-on-surface{% endif %}">
+                        Dashboard Admin
                     </a>
-                </div>
+                    {% endif %}
+                {% endif %}
+            </nav>
 
+            <!-- Right Actions: Profile Badge + Theme Switch + Auth -->
+            <div class="flex items-center gap-space-sm sm:gap-space-md">
+                {% if user.is_authenticated %}
+                    <div class="hidden md:flex items-center gap-space-xs bg-surface-container-high px-space-md py-space-xs rounded-full">
+                        {% if user.is_staff or user.perfil.rol == 'ADMIN' %}
+                            <span class="font-label-sm text-label-sm text-primary font-bold">
+                                🛡️ Admin: {{ user.get_full_name|default:user.username }}
+                            </span>
+                        {% else %}
+                            <span class="font-label-sm text-label-sm text-on-secondary-container font-semibold">
+                                {{ user.get_full_name|default:user.username }} • Perfil Cliente {% if user.perfil.cuenta_validada %}Validado ✓{% else %}(Pendiente){% endif %}
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <!-- Switch Claro / Oscuro -->
+                <button @click="toggleTheme()" aria-label="Cambiar tema"
+                        class="w-9 h-9 flex items-center justify-center rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors"
+                        type="button" title="Alternar modo Claro / Oscuro">
+                    <span class="material-symbols-outlined text-[20px]" x-text="isDark ? 'dark_mode' : 'light_mode'">light_mode</span>
+                </button>
+
+                {% if user.is_authenticated %}
+                    {% if user.is_staff or user.perfil.rol == 'ADMIN' %}
+                    <a href="{% url 'reservas:panel_admin' %}" class="xl:hidden inline-flex items-center px-space-sm py-space-xs font-label-md text-label-md uppercase bg-primary text-on-primary rounded-lg">
+                        Dashboard
+                    </a>
+                    {% else %}
+                    <a href="{% url 'reservas:mis_reservas' %}" class="xl:hidden inline-flex items-center px-space-sm py-space-xs font-label-md text-label-md uppercase bg-surface-container-high text-on-surface rounded-lg">
+                        Mis Reservas
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'reservas:logout' %}"
+                       class="inline-flex items-center px-space-md py-space-xs font-label-md text-label-md uppercase tracking-wider text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors">
+                        Cerrar Sesión
+                    </a>
+                    <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+                    </div>
+                {% else %}
+                    <a href="{% url 'reservas:login' %}"
+                       class="inline-flex items-center px-space-md py-space-xs font-label-md text-label-md uppercase tracking-wider text-on-surface hover:bg-surface-container-high rounded-lg transition-colors">
+                        Iniciar Sesión
+                    </a>
+                    <a href="{% url 'reservas:registro' %}"
+                       class="inline-flex items-center px-space-md py-space-xs font-label-md text-label-md uppercase tracking-wider bg-primary hover:bg-primary-container text-on-primary rounded-lg transition-colors shadow-sm">
+                        Crear Cuenta
+                    </a>
+                {% endif %}
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-1 turf-pattern">
+    <!-- MAIN CONTENT -->
+    <main class="w-full pt-20 bg-surface min-h-[calc(100vh-140px)] flex-1">
+        {% if messages %}
+        <div class="max-w-[1280px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop pt-4 space-y-2">
+            {% for message in messages %}
+            <div class="p-space-md rounded-xl flex items-center justify-between shadow-sm font-body-sm text-body-sm font-semibold
+                {% if message.tags == 'error' %}bg-error-container text-on-error-container
+                {% elif message.tags == 'warning' %}bg-secondary-fixed text-on-secondary-fixed
+                {% else %}bg-surface-container-high text-on-surface border-l-4 border-primary{% endif %}">
+                <div class="flex items-center gap-space-sm">
+                    <span class="material-symbols-outlined text-[20px]">
+                        {% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}check_circle{% endif %}
+                    </span>
+                    <span>{{ message }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer Estilo Club Deportivo -->
-    <footer class="border-t border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#070b14] py-8 text-xs text-slate-500 transition-colors">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div class="flex items-center space-x-3">
-                    <div class="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-black text-sm">7</div>
-                    <p class="font-medium text-slate-600 dark:text-slate-400">© 2026 Futbolito 7 — Plataforma Web de Gestión y Reservas de Complejos Deportivos.</p>
+    <!-- FOOTER STITCH -->
+    <footer class="w-full bg-surface-container-low border-t border-surface-container-high/60">
+        <div class="max-w-[1280px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop py-space-xl flex flex-col md:flex-row items-center justify-between gap-space-md">
+            <div class="flex items-center gap-space-sm">
+                <div class="w-7 h-7 rounded bg-primary flex items-center justify-center text-on-primary">
+                    <span class="material-symbols-outlined text-[16px]">sports_soccer</span>
                 </div>
-                <div class="flex flex-wrap items-center gap-4 text-[11px] font-semibold">
-                    <span class="inline-flex items-center text-emerald-700 dark:text-emerald-400">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
-                        Transacciones ACID PostgreSQL 16
-                    </span>
-                    <span class="text-slate-400">•</span>
-                    <span class="text-slate-600 dark:text-slate-400">Gobernanza ISO/IEC 27034</span>
-                    <span class="text-slate-400">•</span>
-                    <span class="text-slate-600 dark:text-slate-400">Pipeline CI/CD Azure DevOps</span>
-                </div>
+                <span class="font-headline-sm text-headline-sm uppercase text-on-surface">FUTBOLITO 7 CLUB DEPORTIVO</span>
+            </div>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+                © 2026 Futbolito 7 Club Deportivo. Sistema Integral de Reserva de Canchas y Ligas.
+            </p>
+            <div class="flex items-center gap-space-lg">
+                <a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface" href="{% url 'reservas:grilla' %}">Grilla de Canchas</a>
+                {% if user.is_authenticated and user.is_staff or user.is_authenticated and user.perfil.rol == 'ADMIN' %}
+                <a class="font-body-sm text-body-sm text-primary font-semibold hover:underline" href="{% url 'reservas:panel_admin' %}">Panel Administración</a>
+                {% else %}
+                <a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface" href="{% url 'reservas:login' %}">Acceso Club</a>
+                {% endif %}
             </div>
         </div>
     </footer>
 
-    <!-- Script de Gestión de Tema Claro/Oscuro -->
     <script>
         function themeManager() {
             return {
-                isDark: true,
+                isDark: false,
                 init() {
-                    const savedTheme = localStorage.getItem('theme');
+                    const savedTheme = localStorage.getItem('theme_stitch');
                     if (savedTheme) {
                         this.isDark = savedTheme === 'dark';
-                    } else {
-                        this.isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                     }
                     this.applyTheme();
                 },
                 toggleTheme() {
                     this.isDark = !this.isDark;
-                    localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
+                    localStorage.setItem('theme_stitch', this.isDark ? 'dark' : 'light');
                     this.applyTheme();
                 },
                 applyTheme() {
@@ -201,7 +302,6 @@
             }
         }
     </script>
-
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

@@ -1,9 +1,46 @@
 import uuid
+import datetime
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.core.validators import MinValueValidator
 from apps.canchas.models import Cancha
+
+
+class PerfilUsuario(models.Model):
+    class Rol(models.TextChoices):
+        CLIENTE = "CLIENTE", "Cliente / Jugador"
+        ADMIN = "ADMIN", "Administrador del Complejo"
+
+    usuario = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="perfil",
+        verbose_name="Usuario"
+    )
+    rol = models.CharField(
+        max_length=15,
+        choices=Rol.choices,
+        default=Rol.CLIENTE,
+        verbose_name="Rol de Cuenta"
+    )
+    rut = models.CharField(max_length=20, blank=True, default="", verbose_name="RUT")
+    telefono = models.CharField(max_length=30, blank=True, default="", verbose_name="Teléfono Móvil")
+    cuenta_validada = models.BooleanField(default=True, verbose_name="Cuenta Validada por Correo")
+    token_validacion = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    suspendido = models.BooleanField(default=False, verbose_name="Suspendido por Admin")
+    creado_en = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Registro")
+
+    class Meta:
+        verbose_name = "Perfil de Usuario"
+        verbose_name_plural = "Perfiles de Usuarios"
+
+    def __str__(self):
+        return f"{self.usuario.get_full_name() or self.usuario.username} ({self.get_rol_display()})"
+
+    @property
+    def es_admin(self) -> bool:
+        return self.rol == self.Rol.ADMIN or self.usuario.is_staff or self.usuario.is_superuser
 
 
 class BloqueHorario(models.Model):
@@ -59,20 +96,57 @@ class BloqueHorario(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.cancha.nombre} | {self.fecha.strftime('%d/%m/%Y')} {self.hora_inicio.strftime('%H:%M')}-{self.hora_fin.strftime('%H:%M')} [{self.get_estado_display()}]"
+        rango = f"{self.hora_inicio.strftime('%H:%M')}-{self.hora_fin.strftime('%H:%M')}"
+        return f"{self.cancha.nombre} | {self.fecha.strftime('%d/%m/%Y')} {rango} [{self.get_estado_display()}]"
 
     def esta_disponible(self) -> bool:
         """
-        Retorna True si el bloque está disponible o si su bloqueo temporal de 10 min ya expiró.
+        Retorna True si el bloque está disponible o si su bloqueo temporal de 10 min ya expiró,
+        y además no tiene una reserva EN_ESPERA o ACEPTADA activa.
         """
+        if self.cancha.estado != 'OPERATIVA' or not self.cancha.activa:
+            return False
         if self.estado == self.Estado.DISPONIBLE:
             return True
         if self.estado == self.Estado.EN_PROCESO_PAGO and self.expiracion_bloqueo:
+            if self.reservas.filter(estado_reserva='EN_ESPERA').exists():
+                return False
             return timezone.now() > self.expiracion_bloqueo
         return False
 
+    def validar_ventana_temporal(self, ahora=None) -> tuple[bool, str]:
+        """
+        PUNTO 3 DEL PROFESOR: Límite temporal coherente para reservar.
+        - Mínimo 60 minutos (1 hora) de anticipación antes del inicio del turno.
+        - Máximo 14 días de anticipación (no permite reservar con meses de antelación).
+        """
+        if ahora is None:
+            ahora = timezone.now()
+        tz = timezone.get_current_timezone()
+        inicio_naive = datetime.datetime.combine(self.fecha, self.hora_inicio)
+        inicio_aware = timezone.make_aware(inicio_naive, tz) if timezone.is_naive(inicio_naive) else inicio_naive
+
+        diferencia = inicio_aware - ahora
+        if diferencia < datetime.timedelta(minutes=60):
+            return False, "No se puede reservar con menos de 60 minutos de anticipación ni en horarios pasados."
+
+        dias_anticipacion = (self.fecha - timezone.localdate(ahora)).days
+        if dias_anticipacion > 14:
+            return False, "No se puede reservar con más de 14 días de anticipación."
+
+        return True, "OK"
+
+    @property
+    def reserva(self):
+        return self.reservas.exclude(estado_reserva="DENEGADA").first()
+
 
 class Reserva(models.Model):
+    class EstadoReserva(models.TextChoices):
+        EN_ESPERA = "EN_ESPERA", "En Espera de Aprobación"
+        ACEPTADA = "ACEPTADA", "Aceptada por Administración"
+        DENEGADA = "DENEGADA", "Denegada por Administración"
+
     class EstadoPago(models.TextChoices):
         PENDIENTE = "PENDIENTE", "Pendiente de Pago"
         PAGADO = "PAGADO", "Pagado y Confirmado"
@@ -89,10 +163,10 @@ class Reserva(models.Model):
         editable=False,
         verbose_name="Código Único de Reserva"
     )
-    bloque = models.OneToOneField(
+    bloque = models.ForeignKey(
         BloqueHorario,
         on_delete=models.PROTECT,
-        related_name="reserva",
+        related_name="reservas",
         verbose_name="Bloque Horario Asignado"
     )
     usuario = models.ForeignKey(
@@ -109,6 +183,13 @@ class Reserva(models.Model):
         default=TipoReserva.B2C,
         verbose_name="Tipo de Reserva"
     )
+    estado_reserva = models.CharField(
+        max_length=20,
+        choices=EstadoReserva.choices,
+        default=EstadoReserva.EN_ESPERA,
+        verbose_name="Estado de la Reserva"
+    )
+    rut_cliente = models.CharField(max_length=20, blank=True, default="", verbose_name="RUT del Cliente")
     nombre_cliente = models.CharField(max_length=150, verbose_name="Nombre del Titular")
     telefono_cliente = models.CharField(max_length=30, verbose_name="Teléfono Celular")
     email_cliente = models.EmailField(verbose_name="Correo Electrónico")
@@ -130,6 +211,25 @@ class Reserva(models.Model):
         verbose_name="Expiración del Bloqueo Temporal (10 min)"
     )
     notas = models.TextField(blank=True, verbose_name="Notas u Observaciones")
+    gestionado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reservas_gestionadas",
+        verbose_name="Administrador que Gestionó"
+    )
+    fecha_gestion = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha de Decisión Admin"
+    )
+    motivo_decision = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        verbose_name="Observación del Administrador"
+    )
     creado_en = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
     actualizado_en = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
 

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from apps.canchas.models import Complejo, Superficie, Cancha, Tarifa
+from apps.canchas.models import Complejo, Superficie, Cancha, Tarifa, HistorialModificacionCancha
 
 
 @admin.register(Complejo)
@@ -22,10 +22,29 @@ class TarifaInline(admin.TabularInline):
 
 @admin.register(Cancha)
 class CanchaAdmin(admin.ModelAdmin):
-    list_display = ("nombre", "complejo", "superficie", "estado", "techada", "iluminacion_led", "precio_base", "activa")
+    list_display = (
+        "nombre",
+        "complejo",
+        "medidas",
+        "superficie",
+        "estado",
+        "techada",
+        "iluminacion_led",
+        "precio_base",
+        "modificado_por",
+        "fecha_modificacion",
+        "activa",
+    )
     list_filter = ("estado", "complejo", "superficie", "techada", "activa")
-    search_fields = ("nombre", "complejo__nombre")
+    search_fields = ("nombre", "complejo__nombre", "medidas")
     inlines = [TarifaInline]
+
+
+@admin.register(HistorialModificacionCancha)
+class HistorialModificacionCanchaAdmin(admin.ModelAdmin):
+    list_display = ("cancha", "administrador", "detalle_cambio", "fecha")
+    list_filter = ("administrador", "cancha", "fecha")
+    search_fields = ("cancha__nombre", "detalle_cambio")
 
 
 @admin.register(Tarifa)

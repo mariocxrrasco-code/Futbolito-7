@@ -69,7 +69,7 @@ class CanchasModelAndApiTests(TestCase):
             complejo=self.complejo, nombre="Cancha 3 Test", superficie=self.superficie,
             precio_base=35000, estado='OPERATIVA'
         )
-        cancha4 = Cancha.objects.create(
+        Cancha.objects.create(
             complejo=self.complejo, nombre="Cancha 4 Test", superficie=self.superficie,
             precio_base=35000, estado='OPERATIVA'
         )

@@ -1,6 +1,13 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from apps.reservas.models import BloqueHorario, Reserva
+from apps.reservas.models import BloqueHorario, Reserva, PerfilUsuario
+
+
+@admin.register(PerfilUsuario)
+class PerfilUsuarioAdmin(admin.ModelAdmin):
+    list_display = ("usuario", "rol", "rut", "telefono", "cuenta_validada", "suspendido", "creado_en")
+    list_filter = ("rol", "cuenta_validada", "suspendido")
+    search_fields = ("usuario__username", "usuario__email", "rut", "telefono")
 
 
 @admin.register(BloqueHorario)
@@ -34,7 +41,8 @@ class BloqueHorarioAdmin(admin.ModelAdmin):
         }
         color = colores.get(obj.estado, "#000000")
         return format_html(
-            '<span style="background-color: {}; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px;">{}</span>',
+            '<span style="background-color: {}; color: white; padding: 3px 8px; '
+            'border-radius: 4px; font-size: 11px;">{}</span>',
             color,
             obj.get_estado_display()
         )
@@ -49,11 +57,13 @@ class ReservaAdmin(admin.ModelAdmin):
         "telefono_privado",
         "email_privado",
         "monto_total_formateado",
+        "estado_reserva",
         "estado_pago",
+        "gestionado_por",
         "creado_en"
     )
-    list_filter = ("estado_pago", "creado_en", "bloque__cancha__complejo")
-    search_fields = ("codigo", "nombre_cliente", "telefono_cliente", "email_cliente")
+    list_filter = ("estado_reserva", "estado_pago", "creado_en", "bloque__cancha__complejo")
+    search_fields = ("codigo", "nombre_cliente", "rut_cliente", "telefono_cliente", "email_cliente")
     readonly_fields = ("codigo", "creado_en", "actualizado_en", "email_enmascarado", "telefono_enmascarado")
 
     @admin.display(description="Código")

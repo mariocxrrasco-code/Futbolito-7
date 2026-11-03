@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Mis Reservas — Perfil Cliente Futbolito 7{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+
+    <!-- Header Perfil Cliente (Stitch Design) -->
+    <div class="rounded-2xl bg-surface-container-lowest dark:bg-stone-900 border border-stone-200/90 dark:border-stone-800 p-6 sm:p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="space-y-1.5">
+            <div class="flex flex-wrap items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-headline font-extrabold uppercase bg-orange-100 dark:bg-orange-950/60 text-primary dark:text-secondary-container border border-orange-300/70 dark:border-orange-800 tracking-wider">
+                    ⚽ Perfil Cliente / Jugador
+                </span>
+                {% if perfil.cuenta_validada %}
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-headline font-extrabold uppercase bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 tracking-wider">
+                    ✓ Correo Validado
+                </span>
+                {% else %}
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-headline font-extrabold uppercase bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 border border-amber-400 tracking-wider">
+                    ⏳ Pendiente Validación de Correo
+                </span>
+                {% endif %}
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-headline font-extrabold uppercase text-on-surface dark:text-white tracking-tight">
+                {{ user.get_full_name|default:user.username }}
+            </h1>
+            <p class="text-xs font-medium text-stone-600 dark:text-stone-400">
+                Correo: <strong>{{ user.email }}</strong> • RUT: <span class="font-mono">{{ perfil.rut|default:"Sin registrar" }}</span> • Teléfono: <span>{{ perfil.telefono|default:"Sin registrar" }}</span>
+            </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+            {% if not perfil.cuenta_validada %}
+            <a href="{% url 'reservas:validar_cuenta' perfil.token_validacion %}"
+               class="px-4 py-2.5 rounded-xl bg-secondary-container hover:bg-amber-400 text-on-secondary-container font-headline font-bold text-xs uppercase tracking-wider transition shadow-sm flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base">verified</span>
+                <span>Validar Correo Ahora</span>
+            </a>
+            {% endif %}
+            <a href="{% url 'reservas:grilla' %}"
+               class="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-white font-headline font-bold text-xs uppercase tracking-wider transition shadow-sm flex items-center gap-1.5">
+                <span>Ir a Grilla de Canchas</span>
+                <span class="material-symbols-outlined text-base">arrow_forward</span>
+            </a>
+        </div>
+    </div>
+
+    {% if reserva_en_espera %}
+    <!-- Alerta de Reserva En Espera Activa -->
+    <div class="p-5 rounded-xl bg-amber-50 dark:bg-amber-950/50 border-2 border-amber-400 dark:border-amber-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="space-y-1 text-xs sm:text-sm text-amber-950 dark:text-amber-100">
+            <span class="font-headline font-extrabold uppercase tracking-wider text-base block">⏳ Tienes 1 Solicitud de Reserva En Espera</span>
+            <p>Cancha: <strong>{{ reserva_en_espera.bloque.cancha.nombre }}</strong> ({{ reserva_en_espera.bloque.fecha|date:"d/m/Y" }} • {{ reserva_en_espera.bloque.hora_inicio|time:"H:i" }} - {{ reserva_en_espera.bloque.hora_fin|time:"H:i" }} hrs). Mientras el Administrador no acepte o deniegue esta solicitud, no podrás generar otra reserva.</p>
+        </div>
+        <a href="{% url 'reservas:comprobante' reserva_en_espera.codigo %}"
+           class="shrink-0 px-4 py-2.5 rounded-lg bg-primary hover:bg-primary-container text-white font-headline font-bold text-xs uppercase tracking-wider transition">
+            Ver Documento Oficial →
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Historial de Reservas del Cliente -->
+    <div class="rounded-2xl bg-surface-container-lowest dark:bg-stone-900 border border-stone-200/90 dark:border-stone-800 overflow-hidden shadow-sm">
+        <div class="px-6 py-5 bg-surface-container-low dark:bg-stone-800/80 border-b border-stone-200 dark:border-stone-700 flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-headline font-extrabold uppercase text-on-surface dark:text-white tracking-tight">Mis Solicitudes y Documentos de Reserva</h2>
+                <p class="text-xs text-stone-500 dark:text-stone-400">Seguimiento en tiempo real de las 3 etapas: En Espera, Aceptada o Denegada</p>
+            </div>
+        </div>
+
+        {% if reservas %}
+        <div class="divide-y divide-stone-200 dark:divide-stone-800">
+            {% for r in reservas %}
+            <div class="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-surface-container-low/50 dark:hover:bg-stone-800/40 transition">
+                <div class="space-y-1.5">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="font-mono text-xs font-bold text-stone-600 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 px-2 py-0.5 rounded border border-stone-300 dark:border-stone-700">#{{ r.codigo|stringformat:"s"|slice:":8"|upper }}</span>
+                        {% if r.estado_reserva == 'EN_ESPERA' %}
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-headline font-extrabold uppercase bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300 border border-amber-400">
+                            ⏳ Etapa 1: En Espera de Aprobación
+                        </span>
+                        {% elif r.estado_reserva == 'ACEPTADA' %}
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-headline font-extrabold uppercase bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-400">
+                            ✓ Etapa 2A: Reserva Aceptada
+                        </span>
+                        {% else %}
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-headline font-extrabold uppercase bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-300 border border-red-400">
+                            ✕ Etapa 2B: Reserva Denegada
+                        </span>
+                        {% endif %}
+                    </div>
+                    <h3 class="text-xl font-headline font-extrabold uppercase text-on-surface dark:text-white tracking-tight">
+                        {{ r.bloque.cancha.nombre }} <span class="text-sm font-bold text-primary dark:text-secondary-container">({{ r.bloque.cancha.medidas }})</span>
+                    </h3>
+                    <p class="text-xs font-medium text-stone-600 dark:text-stone-400">
+                        Fecha: <strong>{{ r.bloque.fecha|date:"d/m/Y" }}</strong> • Horario: <strong>{{ r.bloque.hora_inicio|time:"H:i" }} - {{ r.bloque.hora_fin|time:"H:i" }} hrs</strong> • Monto: <strong>${{ r.monto_total|floatformat:0 }} CLP</strong>
+                    </p>
+                    {% if r.gestionado_por %}
+                    <p class="text-[11px] text-stone-500 dark:text-stone-400">
+                        Gestionado por Admin: <strong>{{ r.gestionado_por.get_full_name|default:r.gestionado_por.username }}</strong>
+                        {% if r.motivo_decision %} — Motivo: <em>"{{ r.motivo_decision }}"</em>{% endif %}
+                    </p>
+                    {% endif %}
+                </div>
+
+                <div class="shrink-0">
+                    <a href="{% url 'reservas:comprobante' r.codigo %}"
+                       class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-tertiary hover:bg-stone-800 text-white font-headline font-bold text-xs uppercase tracking-wider transition shadow-xs">
+                        <span class="material-symbols-outlined text-sm text-secondary-container">receipt_long</span>
+                        <span>Abrir Documento de Reserva →</span>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-10 text-center space-y-3">
+            <p class="text-sm text-stone-500 dark:text-stone-400">Aún no has realizado ninguna solicitud de reserva de cancha.</p>
+            <a href="{% url 'reservas:grilla' %}"
+               class="inline-flex px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-white font-headline font-bold text-xs uppercase tracking-wider">
+                Explorar Horarios Disponibles
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

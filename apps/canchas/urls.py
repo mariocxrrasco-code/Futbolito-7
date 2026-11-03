@@ -1,8 +1,8 @@
 from django.urls import path
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from apps.canchas.models import Cancha, Complejo
-from apps.canchas.serializers import CanchaSerializer, ComplejoSerializer
+from apps.canchas.models import Cancha
+from apps.canchas.serializers import CanchaSerializer
 
 app_name = "canchas"
 

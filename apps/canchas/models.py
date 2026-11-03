@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 
@@ -47,6 +48,11 @@ class Cancha(models.Model):
         verbose_name="Complejo"
     )
     nombre = models.CharField(max_length=100, verbose_name="Nombre o Número de Cancha")
+    medidas = models.CharField(
+        max_length=60,
+        default="50m x 30m (Fútbol 7 Reglamentario)",
+        verbose_name="Medidas de la Cancha"
+    )
     superficie = models.ForeignKey(
         Superficie,
         on_delete=models.PROTECT,
@@ -69,6 +75,15 @@ class Cancha(models.Model):
         verbose_name="Estado Operativo"
     )
     activa = models.BooleanField(default=True, verbose_name="Disponible para Reserva")
+    modificado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="canchas_modificadas",
+        verbose_name="Última modificación por"
+    )
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
     creado_en = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Registro")
 
     class Meta:
@@ -99,7 +114,8 @@ class Cancha(models.Model):
                 if porcentaje_fuera > 40.0:
                     raise ValidationError(
                         f"Infracción Operacional: No se puede deshabilitar la cancha. "
-                        f"El complejo quedaría con un {porcentaje_fuera:.1f}% fuera de servicio (Máximo permitido: 40%)."
+                        f"El complejo quedaría con un {porcentaje_fuera:.1f}% fuera "
+                        f"de servicio (Máximo permitido: 40%)."
                     )
 
     def save(self, *args, **kwargs):
@@ -146,4 +162,43 @@ class Tarifa(models.Model):
         ordering = ["cancha", "dia_semana", "hora_inicio"]
 
     def __str__(self):
-        return f"{self.cancha.nombre} | {self.get_dia_semana_display()} {self.hora_inicio.strftime('%H:%M')}-{self.hora_fin.strftime('%H:%M')} (${self.precio_bloque:,.0f} CLP)"
+        rango = f"{self.hora_inicio.strftime('%H:%M')}-{self.hora_fin.strftime('%H:%M')}"
+        return f"{self.cancha.nombre} | {self.get_dia_semana_display()} {rango} (${self.precio_bloque:,.0f} CLP)"
+
+
+class HistorialModificacionCancha(models.Model):
+    cancha = models.ForeignKey(
+        Cancha,
+        on_delete=models.CASCADE,
+        related_name="historial_modificaciones",
+        verbose_name="Cancha"
+    )
+    administrador = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="registro_ediciones_cancha",
+        verbose_name="Administrador Responsable"
+    )
+    detalle_cambio = models.CharField(max_length=255, verbose_name="Detalle de la Modificación")
+    fecha = models.DateTimeField(auto_now_add=True, verbose_name="Fecha y Hora")
+
+    class Meta:
+        verbose_name = "Historial de Modificación de Cancha"
+        verbose_name_plural = "Historial de Modificaciones de Canchas"
+        ordering = ["-fecha"]
+
+    def __str__(self):
+        if self.administrador:
+            admin_str = self.administrador.get_full_name() or self.administrador.username
+        else:
+            admin_str = "Sistema"
+        return f"{self.cancha.nombre} modificado por {admin_str} ({self.fecha.strftime('%d/%m/%Y %H:%M')})"
+
+    @property
+    def admin_usuario(self):
+        return self.administrador
+
+    @property
+    def resumen_cambios(self):
+        return self.detalle_cambio

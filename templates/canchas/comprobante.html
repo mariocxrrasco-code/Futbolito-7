@@ -1,81 +1,467 @@
 {% extends "base.html" %}
 
-{% block title %}Comprobante de Reserva Oficial — Futbolito 7{% endblock %}
+{% block title %}Documento Oficial de Reserva #{{ reserva.codigo|stringformat:"s"|slice:":8"|upper }} — Futbolito 7{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto px-4 py-12">
-    <div class="rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-8 sm:p-10 shadow-xl space-y-6 transition-colors">
-        
-        <!-- Header con Check de Confirmación Atlético -->
-        <div class="text-center space-y-3">
-            <div class="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mx-auto shadow-md shadow-emerald-500/20">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+
+    <!-- Secondary Navigation / Breadcrumb Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6 print:hidden">
+        <a href="{% url 'reservas:grilla' %}"
+           class="inline-flex items-center gap-2 text-sm font-bold text-stone-600 dark:text-stone-300 hover:text-primary transition-colors group">
+            <span class="material-symbols-outlined text-lg group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
+            <span>Volver a la Grilla de Canchas</span>
+        </a>
+        <div class="flex items-center gap-2 text-xs font-medium text-stone-500 dark:text-stone-400">
+            <span class="material-symbols-outlined text-sm text-secondary">verified</span>
+            <span>Comprobante Electrónico Auditado • Folio #{{ reserva.codigo|stringformat:"s"|slice:":8"|upper }}</span>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MAIN OFFICIAL RESERVATION TICKET / DOCUMENT CARD (STITCH SCREEN 2)        -->
+    <!-- ========================================================================= -->
+    <article class="bg-surface-container-lowest dark:bg-stone-900 rounded-2xl shadow-xl border border-stone-200/90 dark:border-stone-800 overflow-hidden relative">
+
+        <!-- Top Institutional Accent Strip -->
+        <div class="h-2.5 w-full {% if reserva.estado_reserva == 'ACEPTADA' %}bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-500{% elif reserva.estado_reserva == 'DENEGADA' %}bg-gradient-to-r from-red-800 via-red-600 to-orange-700{% else %}bg-gradient-to-r from-tertiary via-primary to-secondary-container{% endif %}"></div>
+
+        <!-- Document Header Section -->
+        <div class="p-6 sm:p-10 pb-8 bg-gradient-to-b from-surface-container-low/60 to-surface-container-lowest dark:from-stone-800/50 dark:to-stone-900">
+            <div class="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                <div class="space-y-3">
+                    <!-- Dynamic Current Stage Pill -->
+                    {% if reserva.estado_reserva == 'EN_ESPERA' %}
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100 dark:bg-amber-950/80 border border-amber-400/80 text-amber-900 dark:text-amber-300 shadow-xs">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-600 animate-ping"></span>
+                        <span class="font-headline font-extrabold text-xs uppercase tracking-widest">
+                            ETAPA 1 DE 3 • EN ESPERA DE APROBACIÓN DEL ADMINISTRADOR
+                        </span>
+                    </div>
+                    {% elif reserva.estado_reserva == 'ACEPTADA' %}
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-400/80 text-emerald-900 dark:text-emerald-300 shadow-xs">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                        <span class="font-headline font-extrabold text-xs uppercase tracking-widest">
+                            ETAPA FINAL • RESERVA ACEPTADA Y CONFIRMADA POR ADMINISTRACIÓN
+                        </span>
+                    </div>
+                    {% else %}
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100 dark:bg-red-950/80 border border-red-400/80 text-red-900 dark:text-red-300 shadow-xs">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-600"></span>
+                        <span class="font-headline font-extrabold text-xs uppercase tracking-widest">
+                            ETAPA FINAL • RESERVA DENEGADA POR ADMINISTRACIÓN
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    <h1 class="font-headline font-extrabold text-3xl sm:text-5xl uppercase tracking-tight text-on-surface dark:text-white leading-none">
+                        DOCUMENTO OFICIAL DE RESERVA
+                    </h1>
+
+                    <p class="text-stone-600 dark:text-stone-400 text-sm max-w-xl">
+                        Respaldo oficial de solicitud de arriendo emitido por el sistema central de <strong>{{ reserva.bloque.cancha.complejo.nombre }}</strong>.
+                    </p>
+                </div>
+
+                <!-- Right Stamp / Seal Icon & UUID Box -->
+                <div class="flex flex-row md:flex-col items-center md:items-end justify-between gap-3 bg-surface-container-low dark:bg-stone-800 p-4 rounded-xl border border-stone-200 dark:border-stone-700 shrink-0">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-10 h-10 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
+                            <span class="material-symbols-outlined text-2xl">
+                                {% if reserva.estado_reserva == 'ACEPTADA' %}verified{% elif reserva.estado_reserva == 'DENEGADA' %}cancel{% else %}hourglass_top{% endif %}
+                            </span>
+                        </div>
+                        <div class="text-left md:text-right">
+                            <span class="block text-[10px] font-bold uppercase tracking-widest text-stone-500 dark:text-stone-400">Estado de Solicitud</span>
+                            <span class="font-headline font-extrabold text-base uppercase text-primary dark:text-secondary-container">
+                                {% if reserva.estado_reserva == 'EN_ESPERA' %}Revisión Pendiente{% elif reserva.estado_reserva == 'ACEPTADA' %}Reserva Confirmada{% else %}Solicitud Denegada{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="w-full pt-2.5 border-t border-stone-200/80 dark:border-stone-700 flex items-center justify-between gap-3">
+                        <div class="text-left">
+                            <span class="block text-[10px] font-bold uppercase tracking-wider text-stone-400">Código Único UUID</span>
+                            <code id="uuid-text" class="font-mono text-xs font-bold text-stone-800 dark:text-stone-200 tracking-tight">{{ reserva.codigo }}</code>
+                        </div>
+                        <button type="button"
+                                onclick="navigator.clipboard.writeText('{{ reserva.codigo }}')"
+                                title="Copiar código UUID"
+                                class="p-1.5 rounded-md bg-surface-container-high dark:bg-stone-700 hover:bg-stone-300 text-stone-700 dark:text-stone-200 transition-colors cursor-pointer print:hidden">
+                            <span class="material-symbols-outlined text-sm">content_copy</span>
+                        </button>
+                    </div>
+                </div>
             </div>
-            <span class="text-xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 font-athletic">Cancha Asegurada • Turno Confirmado</span>
-            <h1 class="text-3xl sm:text-4xl font-black uppercase text-slate-900 dark:text-white font-athletic tracking-wide">Comprobante de Arriendo</h1>
-            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Código Oficial: <span class="font-mono text-emerald-700 dark:text-emerald-400 font-bold tracking-wider">{{ reserva.codigo }}</span></p>
+
+            <!-- ===================================================================== -->
+            <!-- 3-STAGE STATUS STEPPER (STITCH SCREEN 2)                              -->
+            <!-- ===================================================================== -->
+            <div class="mt-8 pt-6 border-t border-stone-200/90 dark:border-stone-800">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="font-headline font-bold text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+                        Flujo de Validación del Documento (3 Etapas Oficiales)
+                    </span>
+                    <span class="text-xs font-semibold text-primary dark:text-secondary-container">
+                        {% if reserva.estado_reserva == 'EN_ESPERA' %}Paso Actual: Etapa 1{% elif reserva.estado_reserva == 'ACEPTADA' %}Paso Actual: Etapa 2A (Aceptada){% else %}Paso Actual: Etapa 2B (Denegada){% endif %}
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                    <!-- Stage 1 -->
+                    <div class="relative p-4 rounded-xl flex items-start gap-3.5 {% if reserva.estado_reserva == 'EN_ESPERA' %}bg-amber-50/90 dark:bg-amber-950/40 border-2 border-secondary-container shadow-sm{% else %}bg-surface-container-low dark:bg-stone-800/70 border border-stone-200 dark:border-stone-700 opacity-75{% endif %}">
+                        <div class="w-9 h-9 rounded-lg {% if reserva.estado_reserva == 'EN_ESPERA' %}bg-secondary-container text-on-secondary-container{% else %}bg-stone-300 dark:bg-stone-700 text-stone-700 dark:text-stone-300{% endif %} font-headline font-extrabold text-base flex items-center justify-center shrink-0 shadow-xs">
+                            1
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="font-headline font-extrabold text-sm uppercase tracking-wide text-stone-900 dark:text-white">
+                                    1. En Espera (Revisión)
+                                </span>
+                                {% if reserva.estado_reserva == 'EN_ESPERA' %}
+                                <span class="px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container font-headline font-extrabold text-[10px] uppercase">Activo</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-xs text-stone-700 dark:text-stone-300 mt-1 leading-snug">
+                                Horario bloqueado preventivamente. Pendiente de firma del Administrador.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Stage 2A: Aceptada -->
+                    <div class="relative p-4 rounded-xl flex items-start gap-3.5 {% if reserva.estado_reserva == 'ACEPTADA' %}bg-emerald-50 dark:bg-emerald-950/50 border-2 border-emerald-600 shadow-sm{% else %}bg-surface-container-low dark:bg-stone-800/70 border border-stone-200 dark:border-stone-700 opacity-65{% endif %}">
+                        <div class="w-9 h-9 rounded-lg {% if reserva.estado_reserva == 'ACEPTADA' %}bg-emerald-600 text-white{% else %}bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-300{% endif %} font-headline font-extrabold text-sm flex items-center justify-center shrink-0">
+                            2A
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="font-headline font-bold text-sm uppercase tracking-wide text-stone-800 dark:text-stone-100">
+                                    2A. Aceptada (Admin)
+                                </span>
+                                {% if reserva.estado_reserva == 'ACEPTADA' %}
+                                <span class="px-2 py-0.5 rounded bg-emerald-600 text-white font-headline font-extrabold text-[10px] uppercase">Confirmada</span>
+                                {% else %}
+                                <span class="material-symbols-outlined text-base text-stone-400">check_circle</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-xs text-stone-600 dark:text-stone-400 mt-1 leading-snug">
+                                Cancha confirmada e inscrita en programación oficial del club.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Stage 2B: Denegada -->
+                    <div class="relative p-4 rounded-xl flex items-start gap-3.5 {% if reserva.estado_reserva == 'DENEGADA' %}bg-red-50 dark:bg-red-950/50 border-2 border-red-600 shadow-sm{% else %}bg-surface-container-low dark:bg-stone-800/70 border border-stone-200 dark:border-stone-700 opacity-65{% endif %}">
+                        <div class="w-9 h-9 rounded-lg {% if reserva.estado_reserva == 'DENEGADA' %}bg-red-600 text-white{% else %}bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-300{% endif %} font-headline font-extrabold text-sm flex items-center justify-center shrink-0">
+                            2B
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="font-headline font-bold text-sm uppercase tracking-wide text-stone-800 dark:text-stone-100">
+                                    2B. Denegada (Admin)
+                                </span>
+                                {% if reserva.estado_reserva == 'DENEGADA' %}
+                                <span class="px-2 py-0.5 rounded bg-red-600 text-white font-headline font-extrabold text-[10px] uppercase">Rechazada</span>
+                                {% else %}
+                                <span class="material-symbols-outlined text-base text-stone-400">cancel</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-xs text-stone-600 dark:text-stone-400 mt-1 leading-snug">
+                                Solicitud rechazada por administración; libera cupo del jugador.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warning / Resolution Callout Box -->
+            {% if reserva.estado_reserva == 'EN_ESPERA' %}
+            <div class="mt-6 p-4 sm:p-5 rounded-xl bg-amber-100/70 dark:bg-amber-950/40 border-l-4 border-primary flex items-start gap-3.5">
+                <span class="material-symbols-outlined text-primary text-2xl shrink-0 mt-0.5">gpp_maybe</span>
+                <div class="space-y-1 text-xs sm:text-sm text-stone-800 dark:text-stone-200 leading-relaxed">
+                    <p class="font-headline font-extrabold uppercase tracking-wider text-primary dark:text-secondary-container text-sm">
+                        Restricción de Reserva Simultánea Activa (Regla de Negocio #4)
+                    </p>
+                    <p>
+                        Mientras esta reserva se encuentre <strong>EN ESPERA</strong>, tu cuenta no podrá generar una nueva reserva hasta que el Administrador acepte o deniegue esta solicitud. Se ha enviado copia de este documento a tu correo electrónico (<strong>{{ reserva.email_cliente }}</strong>).
+                    </p>
+                </div>
+            </div>
+            {% elif reserva.estado_reserva == 'ACEPTADA' %}
+            <div class="mt-6 p-4 sm:p-5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border-l-4 border-emerald-600 flex items-start gap-3.5">
+                <span class="material-symbols-outlined text-emerald-600 text-2xl shrink-0 mt-0.5">verified</span>
+                <div class="space-y-1 text-xs sm:text-sm text-stone-800 dark:text-stone-200 leading-relaxed">
+                    <p class="font-headline font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 text-sm">
+                        Reserva Aceptada y Confirmada por Administración
+                    </p>
+                    <p>
+                        Aprobada por <strong>{% if reserva.gestionado_por %}{{ reserva.gestionado_por.get_full_name|default:reserva.gestionado_por.username }}{% else %}Administración Central{% endif %}</strong>
+                        {% if reserva.fecha_gestion %}el {{ reserva.fecha_gestion|date:"d/m/Y H:i" }} hrs{% endif %}.
+                        {% if reserva.motivo_decision %}Observación: <em>"{{ reserva.motivo_decision }}"</em>.{% endif %}
+                    </p>
+                </div>
+            </div>
+            {% else %}
+            <div class="mt-6 p-4 sm:p-5 rounded-xl bg-red-50 dark:bg-red-950/40 border-l-4 border-red-600 flex items-start gap-3.5">
+                <span class="material-symbols-outlined text-red-600 text-2xl shrink-0 mt-0.5">report</span>
+                <div class="space-y-1 text-xs sm:text-sm text-stone-800 dark:text-stone-200 leading-relaxed">
+                    <p class="font-headline font-extrabold uppercase tracking-wider text-red-800 dark:text-red-300 text-sm">
+                        Reserva Denegada por Administración — Horario Liberado
+                    </p>
+                    <p>
+                        Gestionada por <strong>{% if reserva.gestionado_por %}{{ reserva.gestionado_por.get_full_name|default:reserva.gestionado_por.username }}{% else %}Administración Central{% endif %}</strong>
+                        {% if reserva.fecha_gestion %}el {{ reserva.fecha_gestion|date:"d/m/Y H:i" }} hrs{% endif %}.
+                        {% if reserva.motivo_decision %}Motivo informado: <strong>"{{ reserva.motivo_decision }}"</strong>.{% endif %}
+                        Tu cuenta ya se encuentra habilitada para realizar una nueva reserva en la grilla.
+                    </p>
+                </div>
+            </div>
+            {% endif %}
         </div>
 
-        <!-- Banner de Privacidad PII / ISO 27034 -->
-        <div class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 flex items-center justify-between text-xs text-slate-700 dark:text-slate-300">
-            <div class="flex items-center space-x-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                <span>Datos protegidos bajo estándar <strong>ISO/IEC 27034</strong> (Enmascaramiento de PII).</span>
-            </div>
-            <span class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 text-[10px] font-black uppercase font-athletic">PostgreSQL ACID</span>
+        <!-- Perforated Ticket Divider Line -->
+        <div class="relative flex items-center justify-between px-3 bg-surface-container-lowest dark:bg-stone-900">
+            <div class="w-6 h-6 rounded-full bg-surface dark:bg-stone-950 border border-stone-300 dark:border-stone-800 -ml-6 shrink-0"></div>
+            <div class="w-full border-t-2 border-dashed border-stone-300 dark:border-stone-700 my-1"></div>
+            <div class="w-6 h-6 rounded-full bg-surface dark:bg-stone-950 border border-stone-300 dark:border-stone-800 -mr-6 shrink-0"></div>
         </div>
 
-        <!-- Resumen del Partido estilo Ticket Deportivo -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
-                <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase font-athletic tracking-wider">Cancha y Complejo</span>
-                <span class="text-lg font-black uppercase text-slate-900 dark:text-white block font-athletic tracking-wide">{{ reserva.bloque.cancha.nombre }}</span>
-                <span class="text-xs font-medium text-slate-600 dark:text-slate-400">{{ reserva.bloque.cancha.complejo.nombre }}</span>
+        <!-- ========================================================================= -->
+        <!-- 4-BOX TWO-COLUMN DETAILS GRID                                             -->
+        <!-- ========================================================================= -->
+        <div class="p-6 sm:p-10 pt-8 space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                <!-- Box 1: Cancha Solicitada -->
+                <div class="p-5 rounded-xl bg-surface-container-low dark:bg-stone-800/90 border border-stone-200/90 dark:border-stone-700 flex flex-col justify-between space-y-4">
+                    <div class="flex items-start justify-between gap-3 border-b border-stone-200 dark:border-stone-700 pb-3">
+                        <div>
+                            <span class="text-[11px] font-headline font-bold uppercase tracking-widest text-primary dark:text-secondary-container block">
+                                Especificación de Recinto
+                            </span>
+                            <h2 class="font-headline font-extrabold text-xl uppercase text-on-surface dark:text-white tracking-tight">
+                                Cancha Solicitada
+                            </h2>
+                        </div>
+                        <div class="w-9 h-9 rounded-lg bg-stone-200/80 dark:bg-stone-700 flex items-center justify-center text-stone-700 dark:text-stone-200">
+                            <span class="material-symbols-outlined text-xl">stadium</span>
+                        </div>
+                    </div>
+
+                    <dl class="space-y-2.5 text-xs sm:text-sm">
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium">Cancha Asignada:</dt>
+                            <dd class="font-bold text-on-surface dark:text-white text-right">{{ reserva.bloque.cancha.nombre }}</dd>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium">Medidas Reglamentarias:</dt>
+                            <dd class="font-mono font-bold text-primary dark:text-secondary-container bg-orange-100/70 dark:bg-orange-950/60 px-2 py-0.5 rounded text-xs">
+                                {{ reserva.bloque.cancha.medidas }}
+                            </dd>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium">Superficie Certificada:</dt>
+                            <dd class="font-semibold text-stone-800 dark:text-stone-200 text-right">{{ reserva.bloque.cancha.superficie.nombre }}</dd>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium">Complejo Deportivo:</dt>
+                            <dd class="font-semibold text-stone-700 dark:text-stone-300 text-right">{{ reserva.bloque.cancha.complejo.nombre }}</dd>
+                        </div>
+                    </dl>
+                </div>
+
+                <!-- Box 2: Fecha y Horario Solicitado -->
+                <div class="p-5 rounded-xl bg-surface-container-low dark:bg-stone-800/90 border border-stone-200/90 dark:border-stone-700 flex flex-col justify-between space-y-4">
+                    <div class="flex items-start justify-between gap-3 border-b border-stone-200 dark:border-stone-700 pb-3">
+                        <div>
+                            <span class="text-[11px] font-headline font-bold uppercase tracking-widest text-primary dark:text-secondary-container block">
+                                Ventana Temporal Validada
+                            </span>
+                            <h2 class="font-headline font-extrabold text-xl uppercase text-on-surface dark:text-white tracking-tight">
+                                Fecha y Bloque Horario
+                            </h2>
+                        </div>
+                        <div class="w-9 h-9 rounded-lg bg-stone-200/80 dark:bg-stone-700 flex items-center justify-center text-stone-700 dark:text-stone-200">
+                            <span class="material-symbols-outlined text-xl">event_available</span>
+                        </div>
+                    </div>
+
+                    <dl class="space-y-2.5 text-xs sm:text-sm">
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium">Fecha de Arriendo:</dt>
+                            <dd class="font-bold text-on-surface dark:text-white capitalize">{{ reserva.bloque.fecha|date:"l d \d\e F, Y" }}</dd>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium">Bloque Horario:</dt>
+                            <dd class="font-headline font-extrabold text-base text-on-surface dark:text-white">
+                                {{ reserva.bloque.hora_inicio|time:"H:i" }} - {{ reserva.bloque.hora_fin|time:"H:i" }} hrs (60 min)
+                            </dd>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium">Franja Tarifaria:</dt>
+                            <dd>
+                                {% if reserva.bloque.es_punta %}
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-500/40 font-headline font-bold text-xs uppercase tracking-wider">
+                                    ⚡ Horario Punta
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-stone-200 dark:bg-stone-700 text-stone-800 dark:text-stone-200 font-headline font-bold text-xs uppercase tracking-wider">
+                                    ☀️ Horario Valle
+                                </span>
+                                {% endif %}
+                            </dd>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium">Regla de Anticipación:</dt>
+                            <dd class="text-xs font-semibold text-stone-700 dark:text-stone-300">Cumple rango (60 min – 14 días)</dd>
+                        </div>
+                    </dl>
+                </div>
+
+                <!-- Box 3: Datos del Cliente Solicitante -->
+                <div class="p-5 rounded-xl bg-surface-container-low dark:bg-stone-800/90 border border-stone-200/90 dark:border-stone-700 flex flex-col justify-between space-y-4">
+                    <div class="flex items-start justify-between gap-3 border-b border-stone-200 dark:border-stone-700 pb-3">
+                        <div>
+                            <span class="text-[11px] font-headline font-bold uppercase tracking-widest text-primary dark:text-secondary-container block">
+                                Identificación y Resguardo PII
+                            </span>
+                            <h2 class="font-headline font-extrabold text-xl uppercase text-on-surface dark:text-white tracking-tight">
+                                Datos del Titular
+                            </h2>
+                        </div>
+                        <div class="w-9 h-9 rounded-lg bg-stone-200/80 dark:bg-stone-700 flex items-center justify-center text-stone-700 dark:text-stone-200">
+                            <span class="material-symbols-outlined text-xl">badge</span>
+                        </div>
+                    </div>
+
+                    <dl class="space-y-2.5 text-xs sm:text-sm">
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium">Jugador Responsable:</dt>
+                            <dd class="font-bold text-on-surface dark:text-white">{{ reserva.nombre_cliente }}</dd>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium">RUT Registrado:</dt>
+                            <dd class="font-mono font-semibold text-stone-800 dark:text-stone-200">{{ reserva.rut_cliente|default:"Sin RUT especificado" }}</dd>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium">Teléfono Contacto:</dt>
+                            <dd class="text-right">
+                                <span class="font-semibold text-stone-800 dark:text-stone-200">{{ reserva.telefono_cliente }}</span>
+                                <span class="block text-[10px] font-mono text-stone-500">AuditLog PII: {{ reserva.telefono_enmascarado }}</span>
+                            </dd>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium">Correo Notificación:</dt>
+                            <dd class="text-right">
+                                <span class="font-semibold text-stone-800 dark:text-stone-200">{{ reserva.email_cliente }}</span>
+                                <span class="block text-[10px] font-mono text-stone-500">AuditLog PII: {{ reserva.email_enmascarado }}</span>
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+
+                <!-- Box 4: Resumen Financiero y Auditoría -->
+                <div class="p-5 rounded-xl bg-tertiary text-on-tertiary border border-stone-800 flex flex-col justify-between space-y-4 shadow-md">
+                    <div class="flex items-start justify-between gap-3 border-b border-stone-800 pb-3">
+                        <div>
+                            <span class="text-[11px] font-headline font-bold uppercase tracking-widest text-secondary-container block">
+                                Resumen de Operación
+                            </span>
+                            <h2 class="font-headline font-extrabold text-xl uppercase text-white tracking-tight">
+                                Liquidación &amp; Auditoría
+                            </h2>
+                        </div>
+                        <div class="w-9 h-9 rounded-lg bg-stone-800 flex items-center justify-center text-secondary-container">
+                            <span class="material-symbols-outlined text-xl">receipt_long</span>
+                        </div>
+                    </div>
+
+                    <dl class="space-y-2.5 text-xs sm:text-sm">
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="text-stone-400 font-medium">Total Arriendo Cancha:</dt>
+                            <dd class="font-headline font-extrabold text-2xl text-secondary-container">${{ reserva.monto_total|floatformat:0 }} CLP</dd>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="text-stone-400 font-medium">Emisión de Solicitud:</dt>
+                            <dd class="font-mono text-xs text-stone-200">{{ reserva.fecha_creacion|date:"d/m/Y H:i:s" }} hrs</dd>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="text-stone-400 font-medium">Resuelto por Admin:</dt>
+                            <dd class="font-semibold text-amber-300 text-right">
+                                {% if reserva.gestionado_por %}
+                                    {{ reserva.gestionado_por.get_full_name|default:reserva.gestionado_por.username }}
+                                {% else %}
+                                    Pendiente de revisión
+                                {% endif %}
+                            </dd>
+                        </div>
+                        <div class="flex items-center justify-between gap-2 pt-1 border-t border-stone-800">
+                            <dt class="text-stone-400 font-medium">Observación / Nota:</dt>
+                            <dd class="text-[11px] font-mono text-stone-300 text-right truncate max-w-[210px]">
+                                {{ reserva.motivo_decision|default:reserva.notas|default:"Bloqueo atómico select_for_update()" }}
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
             </div>
 
-            <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
-                <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase font-athletic tracking-wider">Fecha y Horario</span>
-                <span class="text-lg font-black uppercase text-slate-900 dark:text-white block font-athletic tracking-wide">{{ reserva.bloque.fecha|date:"l d de F, Y" }}</span>
-                <span class="text-xs text-emerald-700 dark:text-emerald-400 font-bold">{{ reserva.bloque.hora_inicio|time:"H:i" }} - {{ reserva.bloque.hora_fin|time:"H:i" }} hrs</span>
-            </div>
+            <!-- QR & Reception Verification Footer Strip -->
+            <div class="p-5 rounded-xl bg-surface-container dark:bg-stone-800/60 border border-stone-200/90 dark:border-stone-700 flex flex-col sm:flex-row items-center justify-between gap-5">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 rounded-xl bg-white p-2 border border-stone-300 flex items-center justify-center shrink-0 shadow-xs">
+                        <span class="material-symbols-outlined text-4xl text-stone-900">qr_code_2</span>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="font-headline font-extrabold text-sm uppercase tracking-wider text-on-surface dark:text-white">
+                                Sello Digital de Check-In en Recepción
+                            </span>
+                            <span class="px-2 py-0.5 rounded bg-stone-300/80 dark:bg-stone-700 text-[10px] font-mono font-bold text-stone-800 dark:text-stone-200">
+                                ISO/IEC 27034 PII
+                            </span>
+                        </div>
+                        <p class="text-xs text-stone-600 dark:text-stone-400 max-w-xl leading-relaxed">
+                            Presenta este documento en la recepción del complejo deportivo. Una vez que el Administrador apruebe la solicitud en el Dashboard, recibirás un segundo correo electrónico con el estado actualizado a <strong>ACEPTADA</strong>.
+                        </p>
+                    </div>
+                </div>
 
-            <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
-                <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase font-athletic tracking-wider">Capitán Titular</span>
-                <span class="text-lg font-black uppercase text-slate-900 dark:text-white block font-athletic tracking-wide">{{ reserva.nombre_cliente }}</span>
-                <span class="text-xs font-medium text-slate-600 dark:text-slate-400 block">Teléfono: {{ reserva.telefono_enmascarado }}</span>
-                <span class="text-xs font-medium text-slate-600 dark:text-slate-400 block">Email: {{ reserva.email_enmascarado }}</span>
-            </div>
-
-            <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
-                <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 block uppercase font-athletic tracking-wider">Monto Total Arriendo</span>
-                <div>
-                    <span class="text-2xl font-black text-slate-900 dark:text-white block font-athletic tracking-wide">${{ reserva.monto_total|floatformat:0 }} CLP</span>
-                    <span class="inline-flex items-center mt-1 px-3 py-0.5 rounded-full text-[11px] font-black uppercase font-athletic bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
-                        {{ reserva.get_estado_pago_display }} (Bloqueo 10 Min)
+                <div class="text-center sm:text-right shrink-0">
+                    <span class="block text-[10px] font-bold uppercase tracking-widest text-stone-500">Notificación SMTP</span>
+                    <span class="inline-flex items-center gap-1 text-xs font-bold text-primary dark:text-secondary-container">
+                        <span class="material-symbols-outlined text-sm">mark_email_read</span>
+                        Enviado a {{ reserva.email_enmascarado }}
                     </span>
                 </div>
             </div>
-        </div>
 
-        {% if reserva.notas %}
-        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300">
-            <span class="text-slate-500 font-bold block mb-0.5 uppercase font-athletic tracking-wider">Notas de Partido:</span>
-            <p>{{ reserva.notas }}</p>
-        </div>
-        {% endif %}
+            <!-- ===================================================================== -->
+            <!-- BOTTOM ACTION BUTTONS                                                 -->
+            <!-- ===================================================================== -->
+            <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 print:hidden">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <a href="{% url 'reservas:grilla' %}"
+                       class="px-5 py-3 rounded-xl bg-surface-container-high dark:bg-stone-800 hover:bg-stone-300/80 dark:hover:bg-stone-700 text-on-surface dark:text-white font-headline font-bold text-sm uppercase tracking-wider transition-colors flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-lg">arrow_back</span>
+                        <span>← Volver a la Grilla</span>
+                    </a>
 
-        <!-- Acciones Inferiores -->
-        <div class="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <a href="{% url 'reservas:grilla' %}" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs uppercase tracking-wider font-athletic transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                <span>Volver a la Grilla</span>
-            </a>
-            <button onclick="window.print()" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider font-athletic transition shadow-md shadow-emerald-600/20">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                <span>Imprimir / Guardar PDF</span>
-            </button>
-        </div>
+                    <a href="{% url 'reservas:mis_reservas' %}"
+                       class="px-5 py-3 rounded-xl bg-tertiary hover:bg-stone-800 text-white font-headline font-bold text-sm uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-sm">
+                        <span class="material-symbols-outlined text-lg text-secondary-container">confirmation_number</span>
+                        <span>Ir a Mis Reservas</span>
+                    </a>
+                </div>
 
-    </div>
+                <button type="button"
+                        onclick="window.print()"
+                        class="px-6 py-3 rounded-xl bg-primary hover:bg-primary-container text-white font-headline font-bold text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer">
+                    <span class="material-symbols-outlined text-lg">print</span>
+                    <span>Imprimir / Guardar PDF</span>
+                </button>
+            </div>
+        </div>
+    </article>
+
 </div>
 {% endblock %}
