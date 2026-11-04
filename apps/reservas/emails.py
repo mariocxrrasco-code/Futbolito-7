@@ -1,5 +1,40 @@
-from django.core.mail import EmailMultiAlternatives
+import threading
+from django.core.mail import EmailMultiAlternatives, get_connection
 from django.conf import settings
+
+
+def _despachar_correo_seguro(msg: EmailMultiAlternatives) -> None:
+    """
+    Envía el correo sin bloquear el hilo HTTP de Gunicorn:
+    - En tests (locmem) se ejecuta síncronamente para poblar mail.outbox.
+    - En producción/desarrollo usa el puerto 2525 para Brevo (ya que Render Free
+      bloquea el puerto 587 saliente) con timeout de 8s en un hilo en segundo plano.
+    """
+    backend_actual = getattr(settings, "EMAIL_BACKEND", "")
+    if "locmem" in backend_actual:
+        msg.send(fail_silently=True)
+        return
+
+    def _worker():
+        try:
+            host = getattr(settings, "EMAIL_HOST", "smtp-relay.brevo.com")
+            port = int(getattr(settings, "EMAIL_PORT", 2525))
+            if "brevo.com" in host and port == 587:
+                port = 2525
+            conn = get_connection(
+                backend=backend_actual,
+                host=host,
+                port=port,
+                username=getattr(settings, "EMAIL_HOST_USER", ""),
+                password=getattr(settings, "EMAIL_HOST_PASSWORD", ""),
+                use_tls=getattr(settings, "EMAIL_USE_TLS", True),
+                timeout=8,
+            )
+            conn.send_messages([msg])
+        except Exception:
+            pass
+
+    threading.Thread(target=_worker, daemon=True).start()
 
 
 def enviar_correo_documento_reserva(reserva, request=None) -> bool:
@@ -118,7 +153,7 @@ def enviar_correo_documento_reserva(reserva, request=None) -> bool:
             to=[reserva.email_cliente],
         )
         msg.attach_alternative(html_content, "text/html")
-        msg.send(fail_silently=True)
+        _despachar_correo_seguro(msg)
         return True
     except Exception:
         return False
@@ -175,7 +210,7 @@ def enviar_correo_validacion_cuenta(perfil, request=None) -> bool:
             to=[usuario.email],
         )
         msg.attach_alternative(html_validacion, "text/html")
-        msg.send(fail_silently=True)
+        _despachar_correo_seguro(msg)
         return True
     except Exception:
         return False

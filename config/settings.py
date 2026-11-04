@@ -136,9 +136,10 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-# Configuración de Correo Electrónico (Conectado a Brevo SMTP Relay para entrega real a Yopmail/Gmail)
+# Configuración de Correo Electrónico (Usa puerto 2525 para Brevo en Render Free donde 587 está bloqueado)
 EMAIL_HOST = env('EMAIL_HOST', default='smtp-relay.brevo.com')
-EMAIL_PORT = env.int('EMAIL_PORT', default=587)
+EMAIL_PORT = env.int('EMAIL_PORT', default=2525)
+EMAIL_TIMEOUT = 8
 EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='c15163001@smtp-brevo.com')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
