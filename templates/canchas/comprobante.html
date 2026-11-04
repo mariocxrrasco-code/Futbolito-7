@@ -323,7 +323,7 @@
                     <div class="flex items-start justify-between gap-3 border-b border-stone-200 dark:border-stone-700 pb-3">
                         <div>
                             <span class="text-[11px] font-headline font-bold uppercase tracking-widest text-primary dark:text-secondary-container block">
-                                Identificación y Resguardo PII
+                                Identificación del Cliente
                             </span>
                             <h2 class="font-headline font-extrabold text-xl uppercase text-on-surface dark:text-white tracking-tight">
                                 Datos del Titular
@@ -334,33 +334,27 @@
                         </div>
                     </div>
 
-                    <dl class="space-y-2.5 text-xs sm:text-sm">
-                        <div class="flex items-center justify-between gap-2">
-                            <dt class="text-stone-500 dark:text-stone-400 font-medium">Jugador Responsable:</dt>
-                            <dd class="font-bold text-on-surface dark:text-white">{{ reserva.nombre_cliente }}</dd>
+                    <dl class="space-y-3 text-xs sm:text-sm">
+                        <div class="flex items-center justify-between gap-3">
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium shrink-0">Jugador Responsable:</dt>
+                            <dd class="font-bold text-on-surface dark:text-white text-right truncate">{{ reserva.nombre_cliente }}</dd>
                         </div>
-                        <div class="flex items-center justify-between gap-2">
-                            <dt class="text-stone-500 dark:text-stone-400 font-medium">RUT Registrado:</dt>
-                            <dd class="font-mono font-semibold text-stone-800 dark:text-stone-200">{{ reserva.rut_cliente|default:"Sin RUT especificado" }}</dd>
+                        <div class="flex items-center justify-between gap-3">
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium shrink-0">RUT Registrado:</dt>
+                            <dd class="font-mono font-semibold text-stone-800 dark:text-stone-200 text-right">{{ reserva.rut_cliente|default:"Sin RUT especificado" }}</dd>
                         </div>
-                        <div class="flex items-center justify-between gap-2">
-                            <dt class="text-stone-500 dark:text-stone-400 font-medium">Teléfono Contacto:</dt>
-                            <dd class="text-right">
-                                <span class="font-semibold text-stone-800 dark:text-stone-200">{{ reserva.telefono_cliente }}</span>
-                                <span class="block text-[10px] font-mono text-stone-500">AuditLog PII: {{ reserva.telefono_enmascarado }}</span>
-                            </dd>
+                        <div class="flex items-center justify-between gap-3">
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium shrink-0">Teléfono Contacto:</dt>
+                            <dd class="font-semibold text-stone-800 dark:text-stone-200 text-right">{{ reserva.telefono_cliente }}</dd>
                         </div>
-                        <div class="flex items-center justify-between gap-2">
-                            <dt class="text-stone-500 dark:text-stone-400 font-medium">Correo Notificación:</dt>
-                            <dd class="text-right">
-                                <span class="font-semibold text-stone-800 dark:text-stone-200">{{ reserva.email_cliente }}</span>
-                                <span class="block text-[10px] font-mono text-stone-500">AuditLog PII: {{ reserva.email_enmascarado }}</span>
-                            </dd>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3 pt-1 border-t border-stone-200/70 dark:border-stone-700/70">
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium shrink-0">Correo Notificación:</dt>
+                            <dd class="font-semibold text-stone-800 dark:text-stone-200 sm:text-right break-all text-xs">{{ reserva.email_cliente }}</dd>
                         </div>
                     </dl>
                 </div>
 
-                <!-- Box 4: Resumen Financiero y Auditoría -->
+                <!-- Box 4: Resumen Financiero y Resolución -->
                 <div class="p-5 rounded-xl bg-tertiary text-on-tertiary border border-stone-800 flex flex-col justify-between space-y-4 shadow-md">
                     <div class="flex items-start justify-between gap-3 border-b border-stone-800 pb-3">
                         <div>
@@ -368,7 +362,7 @@
                                 Resumen de Operación
                             </span>
                             <h2 class="font-headline font-extrabold text-xl uppercase text-white tracking-tight">
-                                Liquidación &amp; Auditoría
+                                Liquidación y Estado
                             </h2>
                         </div>
                         <div class="w-9 h-9 rounded-lg bg-stone-800 flex items-center justify-center text-secondary-container">
@@ -376,16 +370,16 @@
                         </div>
                     </div>
 
-                    <dl class="space-y-2.5 text-xs sm:text-sm">
+                    <dl class="space-y-3 text-xs sm:text-sm">
                         <div class="flex items-center justify-between gap-2">
                             <dt class="text-stone-400 font-medium">Total Arriendo Cancha:</dt>
                             <dd class="font-headline font-extrabold text-2xl text-secondary-container">${{ reserva.monto_total|floatformat:0 }} CLP</dd>
                         </div>
                         <div class="flex items-center justify-between gap-2">
                             <dt class="text-stone-400 font-medium">Emisión de Solicitud:</dt>
-                            <dd class="font-mono text-xs text-stone-200">{{ reserva.fecha_creacion|date:"d/m/Y H:i:s" }} hrs</dd>
+                            <dd class="font-mono text-xs text-stone-200">{{ reserva.creado_en|date:"d/m/Y H:i" }} hrs</dd>
                         </div>
-                        <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center justify-between gap-2 pt-1 border-t border-stone-800">
                             <dt class="text-stone-400 font-medium">Resuelto por Admin:</dt>
                             <dd class="font-semibold text-amber-300 text-right">
                                 {% if reserva.gestionado_por %}
@@ -393,12 +387,6 @@
                                 {% else %}
                                     Pendiente de revisión
                                 {% endif %}
-                            </dd>
-                        </div>
-                        <div class="flex items-center justify-between gap-2 pt-1 border-t border-stone-800">
-                            <dt class="text-stone-400 font-medium">Observación / Nota:</dt>
-                            <dd class="text-[11px] font-mono text-stone-300 text-right truncate max-w-[210px]">
-                                {{ reserva.motivo_decision|default:reserva.notas|default:"Bloqueo atómico select_for_update()" }}
                             </dd>
                         </div>
                     </dl>
@@ -416,9 +404,6 @@
                             <span class="font-headline font-extrabold text-sm uppercase tracking-wider text-on-surface dark:text-white">
                                 Sello Digital de Check-In en Recepción
                             </span>
-                            <span class="px-2 py-0.5 rounded bg-stone-300/80 dark:bg-stone-700 text-[10px] font-mono font-bold text-stone-800 dark:text-stone-200">
-                                ISO/IEC 27034 PII
-                            </span>
                         </div>
                         <p class="text-xs text-stone-600 dark:text-stone-400 max-w-xl leading-relaxed">
                             Presenta este documento en la recepción del complejo deportivo. Una vez que el Administrador apruebe la solicitud en el Dashboard, recibirás un segundo correo electrónico con el estado actualizado a <strong>ACEPTADA</strong>.
@@ -427,10 +412,10 @@
                 </div>
 
                 <div class="text-center sm:text-right shrink-0">
-                    <span class="block text-[10px] font-bold uppercase tracking-widest text-stone-500">Notificación SMTP</span>
-                    <span class="inline-flex items-center gap-1 text-xs font-bold text-primary dark:text-secondary-container">
-                        <span class="material-symbols-outlined text-sm">mark_email_read</span>
-                        Enviado a {{ reserva.email_enmascarado }}
+                    <span class="block text-[10px] font-bold uppercase tracking-widest text-stone-500">Notificación por Correo</span>
+                    <span class="inline-flex items-center gap-1 text-xs font-bold text-primary dark:text-secondary-container break-all">
+                        <span class="material-symbols-outlined text-sm shrink-0">mark_email_read</span>
+                        <span>Enviado a {{ reserva.email_cliente }}</span>
                     </span>
                 </div>
             </div>
