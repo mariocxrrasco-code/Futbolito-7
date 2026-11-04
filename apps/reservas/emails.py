@@ -1,14 +1,21 @@
+import json
 import threading
+import urllib.request
 from django.core.mail import EmailMultiAlternatives, get_connection
 from django.conf import settings
 
 
-def _despachar_correo_seguro(msg: EmailMultiAlternatives) -> None:
+def _despachar_correo_seguro(
+    msg: EmailMultiAlternatives,
+    destinatario_nombre: str = "",
+    html_content: str = "",
+) -> None:
     """
-    Envía el correo sin bloquear el hilo HTTP de Gunicorn:
+    Envía el correo de manera asíncrona y segura:
     - En tests (locmem) se ejecuta síncronamente para poblar mail.outbox.
-    - En producción/desarrollo usa el puerto 2525 para Brevo (ya que Render Free
-      bloquea el puerto 587 saliente) con timeout de 8s en un hilo en segundo plano.
+    - Si existe BREVO_API_KEY, envía a través de la API REST HTTPS oficial de Brevo
+      (puerto 443, inmune a bloqueos de puertos SMTP en Render Free y universidades).
+    - En caso contrario, recurre a la conexión SMTP estándar.
     """
     backend_actual = getattr(settings, "EMAIL_BACKEND", "")
     if "locmem" in backend_actual:
@@ -16,6 +23,41 @@ def _despachar_correo_seguro(msg: EmailMultiAlternatives) -> None:
         return
 
     def _worker():
+        api_key = getattr(settings, "BREVO_API_KEY", "")
+        if api_key:
+            try:
+                url = "https://api.brevo.com/v3/smtp/email"
+                headers = {
+                    "accept": "application/json",
+                    "api-key": api_key,
+                    "content-type": "application/json",
+                }
+                from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "futbolito761@gmail.com")
+                sender_email = from_email
+                sender_name = "Futbolito 7 Club Deportivo"
+                if "<" in from_email and ">" in from_email:
+                    sender_name = from_email.split("<")[0].strip()
+                    sender_email = from_email.split("<")[1].split(">")[0].strip()
+
+                payload = {
+                    "sender": {"name": sender_name, "email": sender_email},
+                    "to": [{"email": to_email, "name": destinatario_nombre or to_email} for to_email in msg.to],
+                    "subject": msg.subject,
+                    "textContent": msg.body,
+                }
+                if html_content:
+                    payload["htmlContent"] = html_content
+
+                req = urllib.request.Request(
+                    url,
+                    data=json.dumps(payload).encode("utf-8"),
+                    headers=headers,
+                )
+                with urllib.request.urlopen(req, timeout=8):
+                    return
+            except Exception:
+                pass
+
         try:
             host = getattr(settings, "EMAIL_HOST", "smtp-relay.brevo.com")
             port = int(getattr(settings, "EMAIL_PORT", 2525))
@@ -153,7 +195,11 @@ def enviar_correo_documento_reserva(reserva, request=None) -> bool:
             to=[reserva.email_cliente],
         )
         msg.attach_alternative(html_content, "text/html")
-        _despachar_correo_seguro(msg)
+        _despachar_correo_seguro(
+            msg,
+            destinatario_nombre=reserva.nombre_cliente,
+            html_content=html_content,
+        )
         return True
     except Exception:
         return False
@@ -210,7 +256,11 @@ def enviar_correo_validacion_cuenta(perfil, request=None) -> bool:
             to=[usuario.email],
         )
         msg.attach_alternative(html_validacion, "text/html")
-        _despachar_correo_seguro(msg)
+        _despachar_correo_seguro(
+            msg,
+            destinatario_nombre=nombre,
+            html_content=html_validacion,
+        )
         return True
     except Exception:
         return False

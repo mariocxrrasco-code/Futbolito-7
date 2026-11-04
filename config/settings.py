@@ -136,7 +136,8 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-# Configuración de Correo Electrónico (Usa puerto 2525 para Brevo en Render Free donde 587 está bloqueado)
+# Configuración de Correo Electrónico (Vía Brevo API HTTPS o SMTP)
+BREVO_API_KEY = env('BREVO_API_KEY', default='')
 EMAIL_HOST = env('EMAIL_HOST', default='smtp-relay.brevo.com')
 EMAIL_PORT = env.int('EMAIL_PORT', default=2525)
 EMAIL_TIMEOUT = 8
