@@ -1,3 +1,9 @@
+databases:
+  - name: futbolito7-db
+    plan: free
+    databaseName: futbolito7_db
+    user: futbolito_user
+
 services:
   - type: web
     name: futbolito-7
@@ -6,6 +12,10 @@ services:
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input
     startCommand: python manage.py migrate && python manage.py seed_data && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: futbolito7-db
+          property: connectionString
       - key: PYTHON_VERSION
         value: 3.12.6
       - key: DEBUG
