@@ -28,10 +28,48 @@ from apps.reservas.services import (
 from apps.reservas.emails import enviar_correo_validacion_cuenta
 
 
+def sincronizar_precios_cancha(cancha: Cancha):
+    """
+    Sincroniza inmediatamente el precio de todos los bloques horarios no cerrados
+    de la cancha según su precio_base actual y su porcentaje de descuento_valle.
+    """
+    precio_punta = cancha.calcular_precio_bloque(es_punta=True)
+    precio_valle = cancha.calcular_precio_bloque(es_punta=False)
+
+    BloqueHorario.objects.filter(
+        cancha=cancha,
+        es_punta=True,
+    ).exclude(
+        estado=BloqueHorario.Estado.RESERVADO
+    ).exclude(
+        precio=precio_punta
+    ).update(precio=precio_punta)
+
+    BloqueHorario.objects.filter(
+        cancha=cancha,
+        es_punta=False,
+    ).exclude(
+        estado=BloqueHorario.Estado.RESERVADO
+    ).exclude(
+        precio=precio_valle
+    ).update(precio=precio_valle)
+
+    # Actualizar monto_total de reservas EN_ESPERA de esta cancha para que su comprobante refleje el nuevo precio
+    for res_espera in Reserva.objects.filter(
+        bloque__cancha=cancha,
+        estado_reserva=Reserva.EstadoReserva.EN_ESPERA
+    ).select_related("bloque"):
+        nuevo_monto = cancha.calcular_precio_bloque(res_espera.bloque.es_punta)
+        if int(res_espera.monto_total) != nuevo_monto:
+            res_espera.monto_total = nuevo_monto
+            res_espera.save(update_fields=["monto_total", "actualizado_en"])
+
+
 def asegurar_bloques_para_fecha(fecha: datetime.date):
     """
     Genera automáticamente los bloques horarios (09:00 a 22:00) para todas las canchas
-    activas si aún no existen para una fecha dentro del rango permitido (hoy a +14 días).
+    activas si aún no existen para una fecha dentro del rango permitido (hoy a +14 días),
+    y sincroniza sus precios con el precio_base y descuento_valle vigentes de cada cancha.
     """
     hoy = timezone.localdate()
     if (fecha - hoy).days < 0 or (fecha - hoy).days > 14:
@@ -50,7 +88,7 @@ def asegurar_bloques_para_fecha(fecha: datetime.date):
                 continue
             h_fin = datetime.time(h + 1, 0) if h < 23 else datetime.time(23, 59)
             es_punta = es_finde or (h >= 18)
-            precio = int(cancha.precio_base) + 4000 if es_punta else int(cancha.precio_base) - 6000
+            precio = cancha.calcular_precio_bloque(es_punta=es_punta)
             estado_inicial = (
                 BloqueHorario.Estado.MANTENCION
                 if cancha.estado != "OPERATIVA"
@@ -62,13 +100,16 @@ def asegurar_bloques_para_fecha(fecha: datetime.date):
                     fecha=fecha,
                     hora_inicio=h_ini,
                     hora_fin=h_fin,
-                    precio=max(precio, 15000),
+                    precio=precio,
                     es_punta=es_punta,
                     estado=estado_inicial,
                 )
             )
     if nuevos:
         BloqueHorario.objects.bulk_create(nuevos, ignore_conflicts=True)
+
+    for cancha in canchas:
+        sincronizar_precios_cancha(cancha)
 
 
 def usuario_es_admin(user) -> bool:
@@ -630,6 +671,7 @@ class AdminEditarCanchaView(View):
         nuevas_medidas = request.POST.get("medidas", "").strip()
         nueva_superficie_id = request.POST.get("superficie_id")
         nuevo_precio = request.POST.get("precio_base")
+        nuevo_descuento = request.POST.get("descuento_valle")
         nuevo_estado = request.POST.get("estado", "").strip()
         nueva_techada = request.POST.get("techada") == "on"
         nueva_led = request.POST.get("iluminacion_led") == "on"
@@ -657,6 +699,15 @@ class AdminEditarCanchaView(View):
             except ValueError:
                 pass
 
+        if nuevo_descuento is not None and str(nuevo_descuento).strip() != "":
+            try:
+                dcto_int = max(0, min(int(float(nuevo_descuento)), 90))
+                if dcto_int != int(cancha.descuento_valle):
+                    cambios.append(f"Descuento Diurno: {cancha.descuento_valle}% → {dcto_int}%")
+                    cancha.descuento_valle = dcto_int
+            except ValueError:
+                pass
+
         if nueva_techada != cancha.techada:
             cambios.append(f"Techada: {'Sí' if nueva_techada else 'No'}")
             cancha.techada = nueva_techada
@@ -674,6 +725,7 @@ class AdminEditarCanchaView(View):
 
         try:
             cancha.save()
+            sincronizar_precios_cancha(cancha)
             # Actualizar bloques disponibles futuros si la cancha pasó a mantención o volvió a operativa
             hoy = timezone.localdate()
             if cancha.estado != "OPERATIVA":

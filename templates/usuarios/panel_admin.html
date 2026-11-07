@@ -136,7 +136,7 @@
                                 {{ r.bloque.cancha.nombre }} ({{ r.bloque.cancha.medidas }})
                             </h3>
                             <span class="font-headline font-bold text-lg text-primary dark:text-secondary-container">
-                                {{ r.bloque.fecha|date:"d/m/Y" }} • {{ r.bloque.hora_inicio|time:"H:i" }} - {{ r.bloque.hora_fin|time:"H:i" }} hrs ({% if r.bloque.es_punta %}⚡ Punta{% else %}☀️ Valle{% endif %})
+                                {{ r.bloque.fecha|date:"d/m/Y" }} • {{ r.bloque.hora_inicio|time:"H:i" }} - {{ r.bloque.hora_fin|time:"H:i" }} hrs ({% if r.bloque.es_punta or r.bloque.cancha.descuento_valle == 0 %}Tarifa Normal{% else %}☀️ -{{ r.bloque.cancha.descuento_valle }}% Dcto. Diurno{% endif %})
                             </span>
                         </div>
 
@@ -322,7 +322,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div>
                                 <label class="block text-[11px] font-headline font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400 mb-1">
                                     Estado Operativo
@@ -347,10 +347,23 @@
                             </div>
                             <div>
                                 <label class="block text-[11px] font-headline font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400 mb-1">
-                                    Precio Base (CLP / hr)
+                                    Precio Reserva (CLP / hr)
                                 </label>
-                                <input type="number" name="precio_base" value="{{ cancha.precio_base|floatformat:0 }}" required
+                                <input type="number" name="precio_base" value="{{ cancha.precio_base|floatformat:0 }}" min="0" step="500" required
                                        class="w-full px-3 py-2 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg text-xs font-headline font-extrabold text-on-surface dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"/>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-headline font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-1">
+                                    Dcto. Horario Diurno (%)
+                                </label>
+                                <div class="relative flex items-center">
+                                    <input type="number" name="descuento_valle" value="{{ cancha.descuento_valle }}" min="0" max="90" required
+                                           class="w-full pr-8 pl-3 py-2 bg-emerald-50/70 dark:bg-stone-800 border border-emerald-400/80 dark:border-emerald-700 rounded-lg text-xs font-headline font-extrabold text-emerald-900 dark:text-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"/>
+                                    <span class="absolute right-3 text-xs font-extrabold text-emerald-700 dark:text-emerald-400 pointer-events-none">%</span>
+                                </div>
+                                <span class="text-[10px] font-semibold text-stone-500 dark:text-stone-400 block mt-1">
+                                    Lun–Vie 09–18h queda en: <strong class="text-emerald-700 dark:text-emerald-400">${{ cancha.precio_con_descuento|floatformat:0 }} CLP</strong>
+                                </span>
                             </div>
                         </div>
 

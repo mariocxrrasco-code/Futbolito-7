@@ -112,11 +112,13 @@ class ReservaService:
                             "El bloque horario seleccionado ya fue tomado o se encuentra en proceso de pago."
                         )
 
-                # CAPA BACKEND: Cambia estado temporal y define expiración a 10 minutos
+                # CAPA BACKEND: Cambia estado temporal, recalcula precio vigente y define expiración a 10 minutos
                 expiracion = ahora + timedelta(minutes=10)
+                precio_vigente = bloque.cancha.calcular_precio_bloque(bloque.es_punta)
+                bloque.precio = precio_vigente
                 bloque.estado = BloqueHorario.Estado.EN_PROCESO_PAGO
                 bloque.expiracion_bloqueo = expiracion
-                bloque.save(update_fields=['estado', 'expiracion_bloqueo', 'actualizado_en'])
+                bloque.save(update_fields=['precio', 'estado', 'expiracion_bloqueo', 'actualizado_en'])
 
                 nueva_reserva = Reserva.objects.create(
                     bloque=bloque,
@@ -128,7 +130,7 @@ class ReservaService:
                     telefono_cliente=telefono_cliente.strip() or "+56900000000",
                     email_cliente=email_limpio,
                     estado_pago=Reserva.EstadoPago.PENDIENTE,
-                    monto_total=bloque.precio,
+                    monto_total=precio_vigente,
                     expiracion_bloqueo=expiracion,
                     notas=notas.strip()
                 )

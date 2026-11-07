@@ -67,6 +67,11 @@ class Cancha(models.Model):
         validators=[MinValueValidator(0)],
         verbose_name="Precio Base (CLP)"
     )
+    descuento_valle = models.PositiveIntegerField(
+        default=20,
+        validators=[MinValueValidator(0)],
+        verbose_name="Descuento Horario Diurno (%)"
+    )
     foto = models.ImageField(upload_to="canchas/", blank=True, null=True, verbose_name="Fotografía")
     estado = models.CharField(
         max_length=20,
@@ -94,6 +99,22 @@ class Cancha(models.Model):
 
     def __str__(self):
         return f"{self.nombre} - {self.complejo.nombre}"
+
+    def calcular_precio_bloque(self, es_punta: bool) -> int:
+        """
+        Retorna el precio del bloque en CLP:
+        - Horario normal/punta (es_punta=True): 100% del precio_base editable por el Admin.
+        - Horario diurno/valle (es_punta=False): aplica el % de descuento configurado (por defecto 20%).
+        """
+        base = int(self.precio_base)
+        dcto = max(0, min(int(self.descuento_valle or 0), 90))
+        if es_punta or dcto == 0:
+            return base
+        return int(round(base * (100 - dcto) / 100.0))
+
+    @property
+    def precio_con_descuento(self) -> int:
+        return self.calcular_precio_bloque(es_punta=False)
 
     def clean(self):
         """

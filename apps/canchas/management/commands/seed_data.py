@@ -186,23 +186,24 @@ class Command(BaseCommand):
             },
         ]
 
-        canchas_creadas = []
-        for cdata in canchas_data:
-            cancha, created_c = Cancha.objects.update_or_create(
-                complejo=complejo,
-                nombre=cdata["nombre"],
-                defaults=cdata,
-            )
-            canchas_creadas.append(cancha)
-            if created_c or not cancha.historial_modificaciones.exists():
-                HistorialModificacionCancha.objects.create(
-                    cancha=cancha,
-                    administrador=cdata["modificado_por"],
-                    detalle_cambio=(
-                        f"Configuración de cancha verificada: Medidas='{cdata['medidas']}', "
-                        f"Precio base=${cdata['precio_base']:,} CLP, Estado=OPERATIVA."
-                    ),
+        canchas_creadas = list(Cancha.objects.filter(complejo=complejo).order_by("id"))
+        if not canchas_creadas:
+            for cdata in canchas_data:
+                cancha, created_c = Cancha.objects.get_or_create(
+                    complejo=complejo,
+                    nombre=cdata["nombre"],
+                    defaults=cdata,
                 )
+                canchas_creadas.append(cancha)
+                if created_c or not cancha.historial_modificaciones.exists():
+                    HistorialModificacionCancha.objects.create(
+                        cancha=cancha,
+                        administrador=cdata["modificado_por"],
+                        detalle_cambio=(
+                            f"Configuración de cancha verificada: Medidas='{cdata['medidas']}', "
+                            f"Precio base=${cdata['precio_base']:,} CLP, Descuento Diurno=20%, Estado=OPERATIVA."
+                        ),
+                    )
 
         # 6. Tarifas Diferenciadas (Valle vs Punta)
         for cancha in canchas_creadas:
@@ -269,9 +270,9 @@ class Command(BaseCommand):
             for cancha in canchas_creadas:
                 for h_ini, h_fin in horas:
                     es_punta = es_finde or (h_ini.hour >= 18)
-                    precio = (cancha.precio_base + 4000) if es_punta else (cancha.precio_base - 8000)
+                    precio = cancha.calcular_precio_bloque(es_punta=es_punta)
 
-                    _, created = BloqueHorario.objects.get_or_create(
+                    bloque_obj, created = BloqueHorario.objects.get_or_create(
                         cancha=cancha,
                         fecha=fecha,
                         hora_inicio=h_ini,
@@ -282,6 +283,9 @@ class Command(BaseCommand):
                             "estado": BloqueHorario.Estado.DISPONIBLE,
                         },
                     )
+                    if not created and bloque_obj.estado != BloqueHorario.Estado.RESERVADO and int(bloque_obj.precio) != precio:
+                        bloque_obj.precio = precio
+                        bloque_obj.save(update_fields=["precio", "actualizado_en"])
                     if created:
                         bloques_count += 1
 

@@ -18,7 +18,8 @@ class CanchaSerializer(serializers.ModelSerializer):
         fields = [
             "id", "nombre", "medidas", "complejo", "complejo_nombre",
             "superficie", "techada", "iluminacion_led",
-            "precio_base", "estado", "activa", "modificado_por_nombre",
+            "precio_base", "descuento_valle", "precio_con_descuento",
+            "estado", "activa", "modificado_por_nombre",
             "fecha_modificacion"
         ]
 
