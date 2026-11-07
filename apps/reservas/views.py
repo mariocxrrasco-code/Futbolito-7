@@ -30,39 +30,22 @@ from apps.reservas.emails import enviar_correo_validacion_cuenta
 
 def sincronizar_precios_cancha(cancha: Cancha):
     """
-    Sincroniza inmediatamente el precio de todos los bloques horarios no cerrados
-    de la cancha según su precio_base actual y su porcentaje de descuento_valle.
+    Sincroniza inmediatamente el precio de todos los bloques horarios y reservas
+    de la cancha con su precio_base fijo actual.
     """
-    precio_punta = cancha.calcular_precio_bloque(es_punta=True)
-    precio_valle = cancha.calcular_precio_bloque(es_punta=False)
+    precio_fijo = int(cancha.precio_base)
 
     BloqueHorario.objects.filter(
         cancha=cancha,
-        es_punta=True,
     ).exclude(
-        estado=BloqueHorario.Estado.RESERVADO
-    ).exclude(
-        precio=precio_punta
-    ).update(precio=precio_punta)
+        precio=precio_fijo
+    ).update(precio=precio_fijo)
 
-    BloqueHorario.objects.filter(
-        cancha=cancha,
-        es_punta=False,
-    ).exclude(
-        estado=BloqueHorario.Estado.RESERVADO
-    ).exclude(
-        precio=precio_valle
-    ).update(precio=precio_valle)
-
-    # Actualizar monto_total de reservas EN_ESPERA de esta cancha para que su comprobante refleje el nuevo precio
-    for res_espera in Reserva.objects.filter(
+    Reserva.objects.filter(
         bloque__cancha=cancha,
-        estado_reserva=Reserva.EstadoReserva.EN_ESPERA
-    ).select_related("bloque"):
-        nuevo_monto = cancha.calcular_precio_bloque(res_espera.bloque.es_punta)
-        if int(res_espera.monto_total) != nuevo_monto:
-            res_espera.monto_total = nuevo_monto
-            res_espera.save(update_fields=["monto_total", "actualizado_en"])
+    ).exclude(
+        monto_total=precio_fijo
+    ).update(monto_total=precio_fijo)
 
 
 def asegurar_bloques_para_fecha(fecha: datetime.date):
@@ -671,7 +654,6 @@ class AdminEditarCanchaView(View):
         nuevas_medidas = request.POST.get("medidas", "").strip()
         nueva_superficie_id = request.POST.get("superficie_id")
         nuevo_precio = request.POST.get("precio_base")
-        nuevo_descuento = request.POST.get("descuento_valle")
         nuevo_estado = request.POST.get("estado", "").strip()
         nueva_techada = request.POST.get("techada") == "on"
         nueva_led = request.POST.get("iluminacion_led") == "on"
@@ -696,15 +678,6 @@ class AdminEditarCanchaView(View):
                 if precio_int != int(cancha.precio_base):
                     cambios.append(f"Precio: ${int(cancha.precio_base):,} → ${precio_int:,}")
                     cancha.precio_base = precio_int
-            except ValueError:
-                pass
-
-        if nuevo_descuento is not None and str(nuevo_descuento).strip() != "":
-            try:
-                dcto_int = max(0, min(int(float(nuevo_descuento)), 90))
-                if dcto_int != int(cancha.descuento_valle):
-                    cambios.append(f"Descuento Diurno: {cancha.descuento_valle}% → {dcto_int}%")
-                    cancha.descuento_valle = dcto_int
             except ValueError:
                 pass
 

@@ -283,7 +283,7 @@ class Command(BaseCommand):
                             "estado": BloqueHorario.Estado.DISPONIBLE,
                         },
                     )
-                    if not created and bloque_obj.estado != BloqueHorario.Estado.RESERVADO and int(bloque_obj.precio) != precio:
+                    if not created and int(bloque_obj.precio) != precio:
                         bloque_obj.precio = precio
                         bloque_obj.save(update_fields=["precio", "actualizado_en"])
                     if created:

@@ -100,21 +100,15 @@ class Cancha(models.Model):
     def __str__(self):
         return f"{self.nombre} - {self.complejo.nombre}"
 
-    def calcular_precio_bloque(self, es_punta: bool) -> int:
+    def calcular_precio_bloque(self, es_punta: bool = False) -> int:
         """
-        Retorna el precio del bloque en CLP:
-        - Horario normal/punta (es_punta=True): 100% del precio_base editable por el Admin.
-        - Horario diurno/valle (es_punta=False): aplica el % de descuento configurado (por defecto 20%).
+        Retorna el precio fijo único de la cancha en CLP configurado por el Administrador.
         """
-        base = int(self.precio_base)
-        dcto = max(0, min(int(self.descuento_valle or 0), 90))
-        if es_punta or dcto == 0:
-            return base
-        return int(round(base * (100 - dcto) / 100.0))
+        return int(self.precio_base)
 
     @property
     def precio_con_descuento(self) -> int:
-        return self.calcular_precio_bloque(es_punta=False)
+        return int(self.precio_base)
 
     def clean(self):
         """

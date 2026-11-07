@@ -135,7 +135,7 @@
             </div>
         </div>
 
-        <!-- Status & Tariff Legend -->
+        <!-- Status Legend -->
         <div class="flex flex-wrap items-center gap-3 sm:gap-4 pt-3 xl:pt-0 border-t xl:border-t-0 border-stone-200 dark:border-stone-800 text-xs font-semibold">
             <div class="flex items-center gap-1.5">
                 <span class="w-3.5 h-3.5 rounded bg-surface-container-lowest border-2 border-primary"></span>
@@ -148,11 +148,6 @@
             <div class="flex items-center gap-1.5">
                 <span class="w-3.5 h-3.5 rounded bg-stone-200 border border-stone-400"></span>
                 <span class="text-stone-500">Ocupado / Fuera de Plazo</span>
-            </div>
-            <div class="h-4 w-px bg-stone-300 dark:bg-stone-700 hidden sm:block"></div>
-            <div class="flex items-center gap-1.5">
-                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-400 font-headline font-bold text-[11px] uppercase tracking-wider">☀️ Dcto. Diurno (Lun–Vie)</span>
-                <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-500/40 font-headline font-bold text-[11px] uppercase tracking-wider">Tarifa Normal</span>
             </div>
         </div>
     </section>
@@ -271,11 +266,6 @@
                         <span class="font-headline font-extrabold text-2xl sm:text-3xl text-on-surface dark:text-white">${{ cancha.precio_base|floatformat:0 }}</span>
                         <span class="text-xs font-bold text-stone-500 uppercase">CLP / 60 min</span>
                     </div>
-                    {% if cancha.descuento_valle > 0 %}
-                    <span class="mt-0.5 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/70 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 text-[10px] font-headline font-bold uppercase">
-                        ☀️ Lun–Vie 09–18h (-{{ cancha.descuento_valle }}%): ${{ cancha.precio_con_descuento|floatformat:0 }} CLP
-                    </span>
-                    {% endif %}
                 </div>
             </div>
 
@@ -301,13 +291,10 @@
                              @click="(bloque.esta_disponible && bloque.dentro_ventana_temporal) ? abrirModalReserva(bloque, '{{ cancha.nombre|escapejs }}') : null">
 
                             <div>
-                                <div class="flex items-center justify-between gap-1 mb-1.5">
-                                    <span class="font-headline font-bold text-sm tracking-tight"
+                                <div class="mb-1.5">
+                                    <span class="font-headline font-bold text-sm tracking-tight whitespace-nowrap"
                                           :class="(bloque.esta_disponible && bloque.dentro_ventana_temporal) ? 'text-on-surface dark:text-stone-100 group-hover:text-primary' : 'text-stone-500 line-through'"
                                           x-text="bloque.hora_inicio_str + ' - ' + bloque.hora_fin_str"></span>
-                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-headline font-bold uppercase"
-                                          :class="(!bloque.es_punta && bloque.cancha && bloque.cancha.descuento_valle > 0) ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-300 border border-emerald-400/70' : 'bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-500/30'"
-                                          x-text="(!bloque.es_punta && bloque.cancha && bloque.cancha.descuento_valle > 0) ? '-' + bloque.cancha.descuento_valle + '% Dcto' : 'Normal'"></span>
                                 </div>
                                 <div class="font-headline font-extrabold text-lg text-on-surface dark:text-white"
                                      x-text="'$' + Number(bloque.precio).toLocaleString('es-CL')"></div>
@@ -375,7 +362,7 @@
             <div>
                 <h4 class="font-headline font-bold text-lg uppercase text-on-surface dark:text-white">Tarifas Transparentes</h4>
                 <p class="text-xs text-stone-600 dark:text-stone-400 mt-1 leading-relaxed">
-                    El precio de la cancha es único y transparente. Además, de lunes a viernes entre 09:00 y 18:00 hrs cuentas con un descuento automático especial en horario diurno.
+                    Precio único y fijo por cancha de 09:00 a 23:00 hrs todos los días de la semana, con iluminación LED incluida y sin recargos ocultos.
                 </p>
             </div>
         </div>
@@ -426,9 +413,8 @@
             <!-- Resumen de Tarifa -->
             <div class="mt-5 p-4 rounded-xl bg-surface-container-low dark:bg-stone-800 border border-stone-200/90 dark:border-stone-700 flex items-center justify-between">
                 <div>
-                    <span class="text-[11px] font-bold text-stone-500 dark:text-stone-400 block uppercase font-headline tracking-wider">Tarifa Aplicada</span>
-                    <span class="text-xs font-bold text-primary dark:text-secondary-container font-headline uppercase tracking-wide"
-                          x-text="bloqueSeleccionado && (!bloqueSeleccionado.es_punta && bloqueSeleccionado.cancha && bloqueSeleccionado.cancha.descuento_valle > 0) ? '☀️ Horario Diurno (-' + bloqueSeleccionado.cancha.descuento_valle + '% Descuento)' : 'Tarifa Normal de Cancha'"></span>
+                    <span class="text-[11px] font-bold text-stone-500 dark:text-stone-400 block uppercase font-headline tracking-wider">Modalidad de Arriendo</span>
+                    <span class="text-xs font-bold text-primary dark:text-secondary-container font-headline uppercase tracking-wide">Turno Reglamentario (60 Minutos)</span>
                 </div>
                 <div class="text-right">
                     <span class="text-[11px] font-bold text-stone-500 dark:text-stone-400 block uppercase font-headline tracking-wider">Total Arriendo</span>

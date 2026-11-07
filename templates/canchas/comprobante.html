@@ -298,17 +298,9 @@
                             </dd>
                         </div>
                         <div class="flex items-center justify-between gap-2">
-                            <dt class="text-stone-500 dark:text-stone-400 font-medium">Tarifa Aplicada:</dt>
-                            <dd>
-                                {% if reserva.bloque.es_punta or reserva.bloque.cancha.descuento_valle == 0 %}
-                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-500/40 font-headline font-bold text-xs uppercase tracking-wider">
-                                    Tarifa Normal (${{ reserva.bloque.cancha.precio_base|floatformat:0 }} CLP)
-                                </span>
-                                {% else %}
-                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/70 text-emerald-900 dark:text-emerald-300 border border-emerald-400 font-headline font-bold text-xs uppercase tracking-wider">
-                                    ☀️ Dcto. Diurno -{{ reserva.bloque.cancha.descuento_valle }}%
-                                </span>
-                                {% endif %}
+                            <dt class="text-stone-500 dark:text-stone-400 font-medium">Valor Arriendo Cancha:</dt>
+                            <dd class="font-headline font-extrabold text-primary dark:text-secondary-container">
+                                ${{ reserva.monto_total|floatformat:0 }} CLP
                             </dd>
                         </div>
                         <div class="flex items-center justify-between gap-2">
