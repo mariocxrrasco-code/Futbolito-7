@@ -427,34 +427,52 @@
             <form @submit.prevent="confirmarReserva()" class="mt-5 space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-headline font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1.5">Nombre Completo Titular</label>
-                        <input type="text" x-model="form.nombre" required placeholder="Ej: Paulo Alegría"
-                               class="w-full bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg px-3.5 py-2.5 text-sm text-on-surface dark:text-white font-medium focus:ring-2 focus:ring-primary focus:outline-none">
+                        <label class="flex items-center justify-between text-xs font-headline font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1.5">
+                            <span>Nombre Completo Titular</span>
+                            <span class="material-symbols-outlined text-xs text-stone-400" title="Dato verificado de tu cuenta">lock</span>
+                        </label>
+                        <input type="text" x-model="form.nombre" readonly tabindex="-1"
+                               class="w-full bg-stone-200/70 dark:bg-stone-800/60 border border-stone-300 dark:border-stone-700 rounded-lg px-3.5 py-2.5 text-sm text-stone-700 dark:text-stone-300 font-semibold cursor-not-allowed select-none focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-headline font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1.5">RUT del Jugador</label>
-                        <input type="text" x-model="form.rut" required placeholder="19.456.789-K"
-                               class="w-full bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg px-3.5 py-2.5 text-sm text-on-surface dark:text-white font-mono font-medium focus:ring-2 focus:ring-primary focus:outline-none">
+                        <label class="flex items-center justify-between text-xs font-headline font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1.5">
+                            <span>RUT del Jugador</span>
+                            <span class="material-symbols-outlined text-xs text-stone-400" title="Dato verificado de tu cuenta">lock</span>
+                        </label>
+                        <input type="text" x-model="form.rut" readonly tabindex="-1"
+                               class="w-full bg-stone-200/70 dark:bg-stone-800/60 border border-stone-300 dark:border-stone-700 rounded-lg px-3.5 py-2.5 text-sm text-stone-700 dark:text-stone-300 font-mono font-semibold cursor-not-allowed select-none focus:outline-none">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-headline font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1.5">WhatsApp / Teléfono Móvil</label>
-                        <input type="tel" x-model="form.telefono" required placeholder="+56 9 9876 5432"
-                               class="w-full bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg px-3.5 py-2.5 text-sm text-on-surface dark:text-white font-medium focus:ring-2 focus:ring-primary focus:outline-none">
+                        <label class="flex items-center justify-between text-xs font-headline font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1.5">
+                            <span>WhatsApp / Teléfono Móvil</span>
+                            <span class="material-symbols-outlined text-xs text-stone-400" title="Dato verificado de tu cuenta">lock</span>
+                        </label>
+                        <input type="tel" x-model="form.telefono" readonly tabindex="-1"
+                               class="w-full bg-stone-200/70 dark:bg-stone-800/60 border border-stone-300 dark:border-stone-700 rounded-lg px-3.5 py-2.5 text-sm text-stone-700 dark:text-stone-300 font-semibold cursor-not-allowed select-none focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-headline font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1.5">Correo (Recibirás Documento)</label>
-                        <input type="email" x-model="form.email" required placeholder="jugador@yopmail.com"
-                               class="w-full bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg px-3.5 py-2.5 text-sm text-on-surface dark:text-white font-medium focus:ring-2 focus:ring-primary focus:outline-none">
+                        <label class="flex items-center justify-between text-xs font-headline font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1.5">
+                            <span>Correo (Recibirás Documento)</span>
+                            <span class="material-symbols-outlined text-xs text-stone-400" title="Dato verificado de tu cuenta">lock</span>
+                        </label>
+                        <input type="email" x-model="form.email" readonly tabindex="-1"
+                               class="w-full bg-stone-200/70 dark:bg-stone-800/60 border border-stone-300 dark:border-stone-700 rounded-lg px-3.5 py-2.5 text-sm text-stone-700 dark:text-stone-300 font-semibold cursor-not-allowed select-none focus:outline-none">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-headline font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1.5">Notas de Partido (Opcional)</label>
-                    <input type="text" x-model="form.notas" placeholder="Ej: Necesitamos 12 petos de entrenamiento"
+                    <input type="text" x-model="form.notas" maxlength="100"
+                           @input="filtrarNotas($event)"
+                           placeholder="Ej: Necesitamos 12 petos de entrenamiento"
                            class="w-full bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-lg px-3.5 py-2.5 text-sm text-on-surface dark:text-white font-medium focus:ring-2 focus:ring-primary focus:outline-none">
+                    <p x-show="avisoNotas" x-transition class="mt-1.5 text-xs font-bold text-error flex items-center gap-1" style="display: none;">
+                        <span class="material-symbols-outlined text-sm">warning</span>
+                        <span x-text="avisoNotas"></span>
+                    </p>
                 </div>
 
                 <!-- Aviso de 3 Etapas -->
@@ -508,6 +526,19 @@
                 telefono: '{% if user.is_authenticated and user.perfil and user.perfil.telefono %}{{ user.perfil.telefono|escapejs }}{% else %}+56 9 {% endif %}',
                 email: '{% if user.is_authenticated %}{{ user.email|escapejs }}{% endif %}',
                 notas: '',
+            },
+            avisoNotas: '',
+
+            filtrarNotas(e) {
+                const original = e.target.value;
+                const limpio = original.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s]/g, '');
+                if (original !== limpio) {
+                    this.avisoNotas = 'En las notas de partido solo se permiten letras, números y espacios (sin símbolos).';
+                    e.target.value = limpio;
+                    this.form.notas = limpio;
+                } else {
+                    this.avisoNotas = '';
+                }
             },
 
             init() {

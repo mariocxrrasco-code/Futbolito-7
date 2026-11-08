@@ -1,4 +1,5 @@
 import datetime
+import re
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.views.generic import TemplateView
@@ -261,11 +262,28 @@ class ApiReservarBloqueView(APIView):
                     status=status.HTTP_403_FORBIDDEN
                 )
 
-        nombre_cliente = data.get("nombre_cliente") or (user.get_full_name() or user.username if user else "")
-        email_cliente = data.get("email_cliente") or (user.email if user else "")
         perfil_user = getattr(user, "perfil", None) if user else None
-        telefono_cliente = data.get("telefono_cliente") or (perfil_user.telefono if perfil_user else "")
-        rut_cliente = data.get("rut_cliente") or (perfil_user.rut if perfil_user else "")
+        if modo_web and user:
+            nombre_cliente = user.get_full_name() or user.username
+            email_cliente = user.email
+            telefono_cliente = perfil_user.telefono if perfil_user else ""
+            rut_cliente = perfil_user.rut if perfil_user else ""
+        else:
+            nombre_cliente = data.get("nombre_cliente") or (user.get_full_name() or user.username if user else "")
+            email_cliente = data.get("email_cliente") or (user.email if user else "")
+            telefono_cliente = data.get("telefono_cliente") or (perfil_user.telefono if perfil_user else "")
+            rut_cliente = data.get("rut_cliente") or (perfil_user.rut if perfil_user else "")
+
+        notas_raw = (data.get("notas") or "").strip()
+        if notas_raw and not re.match(r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s]+$", notas_raw):
+            return Response(
+                {
+                    "error": "Notas Inválidas",
+                    "detalle": "En las notas de partido solo se permiten letras, números y espacios (sin símbolos).",
+                    "detail": "En las notas de partido solo se permiten letras, números y espacios (sin símbolos).",
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             # Si es flujo web (o usuario autenticado), la reserva queda EN_ESPERA de aprobación del Admin
@@ -279,7 +297,7 @@ class ApiReservarBloqueView(APIView):
                 nombre_cliente=nombre_cliente,
                 telefono_cliente=telefono_cliente,
                 email_cliente=email_cliente,
-                notas=data.get("notas", ""),
+                notas=notas_raw,
                 confirmar_pago_inmediato=confirmar_inmediato,
                 usuario=user,
                 validar_ventana=validar_ventana,
@@ -427,12 +445,33 @@ class RegistroClienteView(View):
             messages.error(request, "Todos los campos obligatorios deben ser completados.")
             return render(request, self.template_name, {"form_data": request.POST})
 
+        nombre_validar = nombre_completo or f"{nombre} {apellido}".strip()
+        if not re.match(r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]{3,80}$", nombre_validar):
+            messages.error(request, "En el Nombre Completo solo se permiten letras y espacios (sin números ni símbolos).")
+            return render(request, self.template_name, {"form_data": request.POST})
+
+        if username_input and not re.match(r"^[a-zA-Z0-9._]{3,30}$", username_input):
+            messages.error(request, "En el Nombre de Usuario solo se permiten letras, números, punto (.) y guion bajo (_), sin espacios.")
+            return render(request, self.template_name, {"form_data": request.POST})
+
+        if not re.match(r"^[0-9.\-kK]{7,12}$", rut) or not any(c.isdigit() for c in rut):
+            messages.error(request, "En el RUT solo se permiten números, puntos (.), guion (-) y la letra K.")
+            return render(request, self.template_name, {"form_data": request.POST})
+
+        if not re.match(r"^[+0-9\s]{8,16}$", telefono) or len(re.sub(r"\D", "", telefono)) < 8:
+            messages.error(request, "En el Teléfono Móvil solo se permiten números y el signo + (mínimo 8 dígitos).")
+            return render(request, self.template_name, {"form_data": request.POST})
+
+        if not re.match(r"^[a-zA-Z0-9._+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$", email):
+            messages.error(request, "Ingresa un correo electrónico válido sin espacios ni símbolos prohibidos.")
+            return render(request, self.template_name, {"form_data": request.POST})
+
         if password != password_confirm:
             messages.error(request, "Las contraseñas ingresadas no coinciden.")
             return render(request, self.template_name, {"form_data": request.POST})
 
-        if len(password) < 6:
-            messages.error(request, "La contraseña debe tener al menos 6 caracteres.")
+        if len(password) < 6 or len(password) > 32:
+            messages.error(request, "La contraseña debe tener entre 6 y 32 caracteres.")
             return render(request, self.template_name, {"form_data": request.POST})
 
         username_final = username_input or email
@@ -452,17 +491,16 @@ class RegistroClienteView(View):
             rol=PerfilUsuario.Rol.CLIENTE,
             rut=rut,
             telefono=telefono,
-            cuenta_validada=True,
+            cuenta_validada=False,
         )
 
         enviar_correo_validacion_cuenta(perfil, request=request)
-        login(request, user)
         messages.success(
             request,
-            f"¡Bienvenido {user.get_full_name()}! Tu cuenta de Cliente ha sido creada y validada. "
-            f"Hemos enviado el comprobante de activación a {email}."
+            f"¡Cuenta creada para {user.get_full_name()}! Hemos enviado un enlace de validación a {email}. "
+            f"Debes abrir ese correo y hacer clic en 'Validar mi Cuenta' para poder iniciar sesión."
         )
-        return redirect("reservas:grilla")
+        return redirect("reservas:login")
 
 
 class ValidarCuentaView(View):
@@ -470,7 +508,12 @@ class ValidarCuentaView(View):
         perfil = get_object_or_404(PerfilUsuario, token_validacion=token)
         perfil.cuenta_validada = True
         perfil.save(update_fields=["cuenta_validada"])
-        messages.success(request, "¡Tu cuenta de Cliente ha sido validada exitosamente! Ya puedes reservar canchas.")
+        login(request, perfil.usuario)
+        messages.success(
+            request,
+            f"¡Correo validado exitosamente, {perfil.usuario.get_full_name() or perfil.usuario.username}! "
+            f"Tu cuenta de Cliente ya está activa y puedes reservar canchas."
+        )
         return redirect("reservas:grilla")
 
 
@@ -494,6 +537,15 @@ class LoginUsuarioView(View):
             perfil = getattr(user, "perfil", None)
             if perfil and perfil.suspendido:
                 messages.error(request, "Tu cuenta se encuentra suspendida por el Administrador del complejo.")
+                return render(request, self.template_name)
+
+            if perfil and not usuario_es_admin(user) and not perfil.cuenta_validada:
+                enviar_correo_validacion_cuenta(perfil, request=request)
+                messages.error(
+                    request,
+                    f"⚠️ Tu cuenta aún no ha sido validada. Revisa tu bandeja de correo ({user.email}) "
+                    f"y haz clic en el botón 'Validar mi Cuenta' antes de iniciar sesión."
+                )
                 return render(request, self.template_name)
 
             login(request, user)

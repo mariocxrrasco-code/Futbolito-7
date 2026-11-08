@@ -3,7 +3,28 @@
 {% block title %}Iniciar Sesión — Futbolito 7{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12"
+     x-data="{
+         avisos: {
+             login_username: '',
+             nombre_completo: '',
+             username: '',
+             rut: '',
+             email: '',
+             telefono: '',
+             password: ''
+         },
+         filtrar(event, campo, regexPermitido, mensajeAviso) {
+             const val = event.target.value;
+             const limpio = val.replace(regexPermitido, '');
+             if (val !== limpio) {
+                 this.avisos[campo] = mensajeAviso;
+                 event.target.value = limpio;
+             } else {
+                 this.avisos[campo] = '';
+             }
+         }
+     }">
 
     <!-- ========================================================================= -->
     <!-- TOP SECTION INTRO BANNER (STITCH SCREEN 4)                                -->
@@ -68,11 +89,17 @@
                             <input id="login-username"
                                    name="username"
                                    type="text"
+                                   maxlength="80"
                                    required
                                    autofocus
+                                   @input="filtrar($event, 'login_username', /[^a-zA-Z0-9@._\-]/g, 'Solo se permiten letras, números, @, punto (.), guion (-) y guion bajo (_).')"
                                    placeholder="jugador@correo.cl o nombre_usuario"
                                    class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
                         </div>
+                        <p x-show="avisos.login_username" x-transition class="text-[11px] font-bold text-error flex items-center gap-1 pt-0.5" style="display: none;">
+                            <span class="material-symbols-outlined text-sm">warning</span>
+                            <span x-text="avisos.login_username"></span>
+                        </p>
                     </div>
 
                     <div class="space-y-1.5">
@@ -87,6 +114,8 @@
                             <input id="login-password"
                                    name="password"
                                    type="password"
+                                   minlength="6"
+                                   maxlength="32"
                                    required
                                    placeholder="••••••••••••"
                                    class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
@@ -158,10 +187,17 @@
                             <input id="reg-fullname"
                                    name="nombre_completo"
                                    type="text"
+                                   minlength="3"
+                                   maxlength="80"
                                    required
+                                   @input="filtrar($event, 'nombre_completo', /[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, 'En el nombre solo se permiten letras y espacios (sin números ni símbolos).')"
                                    placeholder="Ej: Martín Rodríguez Soto"
                                    class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
                         </div>
+                        <p x-show="avisos.nombre_completo" x-transition class="text-[11px] font-bold text-error flex items-center gap-1 pt-0.5" style="display: none;">
+                            <span class="material-symbols-outlined text-sm">warning</span>
+                            <span x-text="avisos.nombre_completo"></span>
+                        </p>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -174,10 +210,17 @@
                                 <input id="reg-username"
                                        name="username"
                                        type="text"
+                                       minlength="3"
+                                       maxlength="30"
                                        required
+                                       @input="filtrar($event, 'username', /[^a-zA-Z0-9._]/g, 'En el usuario solo se permiten letras, números, punto (.) y guion bajo (_), sin espacios.')"
                                        placeholder="martin_f7"
                                        class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
                             </div>
+                            <p x-show="avisos.username" x-transition class="text-[11px] font-bold text-error flex items-center gap-1 pt-0.5" style="display: none;">
+                                <span class="material-symbols-outlined text-sm">warning</span>
+                                <span x-text="avisos.username"></span>
+                            </p>
                         </div>
 
                         <div class="space-y-1.5">
@@ -191,10 +234,17 @@
                                 <input id="reg-rut"
                                        name="rut"
                                        type="text"
+                                       minlength="8"
+                                       maxlength="12"
                                        required
+                                       @input="filtrar($event, 'rut', /[^0-9.\-kK]/g, 'En el RUT solo se permiten números, puntos (.), guion (-) y la letra K.')"
                                        placeholder="19.456.789-K"
                                        class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-mono font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
                             </div>
+                            <p x-show="avisos.rut" x-transition class="text-[11px] font-bold text-error flex items-center gap-1 pt-0.5" style="display: none;">
+                                <span class="material-symbols-outlined text-sm">warning</span>
+                                <span x-text="avisos.rut"></span>
+                            </p>
                         </div>
                     </div>
 
@@ -208,10 +258,16 @@
                                 <input id="reg-email"
                                        name="email"
                                        type="email"
+                                       maxlength="100"
                                        required
+                                       @input="filtrar($event, 'email', /[^a-zA-Z0-9@._\-+]/g, 'En el correo solo se permiten letras, números, @, punto (.) y guion (-), sin espacios.')"
                                        placeholder="jugador@yopmail.com"
                                        class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
                             </div>
+                            <p x-show="avisos.email" x-transition class="text-[11px] font-bold text-error flex items-center gap-1 pt-0.5" style="display: none;">
+                                <span class="material-symbols-outlined text-sm">warning</span>
+                                <span x-text="avisos.email"></span>
+                            </p>
                         </div>
 
                         <div class="space-y-1.5">
@@ -223,11 +279,17 @@
                                 <input id="reg-phone"
                                        name="telefono"
                                        type="tel"
+                                       maxlength="15"
                                        required
                                        value="+56 9 "
+                                       @input="filtrar($event, 'telefono', /[^+0-9\s]/g, 'En el teléfono solo se permiten números y el signo +.')"
                                        placeholder="+56 9 8765 4321"
                                        class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
                             </div>
+                            <p x-show="avisos.telefono" x-transition class="text-[11px] font-bold text-error flex items-center gap-1 pt-0.5" style="display: none;">
+                                <span class="material-symbols-outlined text-sm">warning</span>
+                                <span x-text="avisos.telefono"></span>
+                            </p>
                         </div>
                     </div>
 
@@ -236,7 +298,7 @@
                             <label for="reg-password" class="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
                                 Contraseña de Seguridad <span class="text-primary">*</span>
                             </label>
-                            <span class="text-[11px] font-medium text-stone-500">Mínimo 6 caracteres</span>
+                            <span class="text-[11px] font-medium text-stone-500">Entre 6 y 32 caracteres</span>
                         </div>
                         <div class="relative flex items-center">
                             <span class="material-symbols-outlined absolute left-3.5 text-stone-400 text-lg pointer-events-none">password</span>
@@ -244,6 +306,7 @@
                                    name="password"
                                    type="password"
                                    minlength="6"
+                                   maxlength="32"
                                    required
                                    placeholder="Crea una contraseña segura (mín. 6 caracteres)"
                                    class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
