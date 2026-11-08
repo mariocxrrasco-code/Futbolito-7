@@ -5,6 +5,7 @@
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12"
      x-data="{
+         regRut: '',
          regPassword: '',
          avisos: {
              nombre_completo: '',
@@ -22,6 +23,33 @@
                  event.target.value = limpio;
              } else {
                  this.avisos[campo] = '';
+             }
+         },
+         validarInputRut(event) {
+             const val = event.target.value;
+             const limpio = val.replace(/[^0-9.\-kK]/g, '');
+             this.regRut = limpio;
+             if (val !== limpio) {
+                 event.target.value = limpio;
+                 this.avisos.rut = 'En el RUT solo se permiten números, puntos (.), guion (-) y la letra K.';
+                 return;
+             }
+             const puntos = (limpio.match(/\./g) || []).length;
+             const guiones = (limpio.match(/-/g) || []).length;
+             if (puntos > 2 || guiones > 1 || (limpio.length >= 11 && !limpio.includes('-'))) {
+                 this.avisos.rut = 'Formato inválido: debe llevar 2 puntos y 1 guion antes del dígito final (ej: 21.123.456-7).';
+             } else if (limpio.length === 12 && !/^\d{2}\.\d{3}\.\d{3}-[\dkK]$/.test(limpio)) {
+                 this.avisos.rut = 'El RUT debe tener exactamente 9 dígitos, 2 puntos y 1 guion (ej: 21.123.456-7).';
+             } else {
+                 this.avisos.rut = '';
+             }
+         },
+         verificarFormatoRut() {
+             if (!this.regRut) return;
+             if (!/^\d{2}\.\d{3}\.\d{3}-[\dkK]$/.test(this.regRut)) {
+                 this.avisos.rut = 'El RUT debe tener obligatoriamente 9 dígitos, 2 puntos y 1 guion (ej: 21.123.456-7).';
+             } else {
+                 this.avisos.rut = '';
              }
          },
          get tieneLongitud() {
@@ -54,11 +82,21 @@
              return '';
          },
          validarEnvioRegistro(event) {
+             let ok = true;
+             if (!/^\d{2}\.\d{3}\.\d{3}-[\dkK]$/.test(this.regRut)) {
+                 this.avisos.rut = 'El RUT debe tener obligatoriamente 9 dígitos, 2 puntos y 1 guion (ej: 21.123.456-7).';
+                 ok = false;
+             } else {
+                 this.avisos.rut = '';
+             }
              if (!this.passwordValida) {
-                 event.preventDefault();
                  this.avisos.password = 'La contraseña debe tener de 8 a 16 caracteres, mínimo 1 mayúscula y 1 número.';
+                 ok = false;
              } else {
                  this.avisos.password = '';
+             }
+             if (!ok) {
+                 event.preventDefault();
              }
          }
      }">
@@ -263,11 +301,13 @@
                                 <input id="reg-rut"
                                        name="rut"
                                        type="text"
-                                       minlength="8"
+                                       x-model="regRut"
+                                       minlength="12"
                                        maxlength="12"
                                        required
-                                       @input="filtrar($event, 'rut', /[^0-9.\-kK]/g, 'En el RUT solo se permiten números, puntos (.), guion (-) y la letra K.')"
-                                       placeholder="19.456.789-K"
+                                       @input="validarInputRut($event)"
+                                       @blur="verificarFormatoRut()"
+                                       placeholder="21.123.456-7"
                                        class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-mono font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
                             </div>
                             <p x-show="avisos.rut" x-transition class="text-[11px] font-bold text-error flex items-center gap-1 pt-0.5" style="display: none;">

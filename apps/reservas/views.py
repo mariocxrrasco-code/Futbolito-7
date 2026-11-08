@@ -454,8 +454,11 @@ class RegistroClienteView(View):
             messages.error(request, "En el Nombre de Usuario solo se permiten letras, números, punto (.) y guion bajo (_), sin espacios.")
             return render(request, self.template_name, {"form_data": request.POST})
 
-        if not re.match(r"^[0-9.\-kK]{7,12}$", rut) or not any(c.isdigit() for c in rut):
-            messages.error(request, "En el RUT solo se permiten números, puntos (.), guion (-) y la letra K.")
+        if not re.match(r"^\d{2}\.\d{3}\.\d{3}-[\dkK]$", rut):
+            messages.error(
+                request,
+                "El RUT debe tener obligatoriamente el formato chileno XX.XXX.XXX-X (9 dígitos, 2 puntos y 1 guion, ej: 21.123.456-7)."
+            )
             return render(request, self.template_name, {"form_data": request.POST})
 
         if not re.match(r"^[+0-9\s]{8,16}$", telefono) or len(re.sub(r"\D", "", telefono)) < 8:
