@@ -5,8 +5,8 @@
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12"
      x-data="{
+         regPassword: '',
          avisos: {
-             login_username: '',
              nombre_completo: '',
              username: '',
              rut: '',
@@ -22,6 +22,43 @@
                  event.target.value = limpio;
              } else {
                  this.avisos[campo] = '';
+             }
+         },
+         get tieneLongitud() {
+             return this.regPassword.length >= 8 && this.regPassword.length <= 16;
+         },
+         get tieneMayuscula() {
+             return /[A-ZÁÉÍÓÚÑ]/.test(this.regPassword);
+         },
+         get tieneNumero() {
+             return /[0-9]/.test(this.regPassword);
+         },
+         get passwordValida() {
+             return this.tieneLongitud && this.tieneMayuscula && this.tieneNumero;
+         },
+         get nivelSeguridad() {
+             if (!this.regPassword) return 0;
+             if (!this.passwordValida) return 1;
+             const tieneMinuscula = /[a-záéíóúñ]/.test(this.regPassword);
+             const tieneEspecial = /[^a-zA-Z0-9\s]/.test(this.regPassword);
+             const variosNumeros = (this.regPassword.match(/[0-9]/g) || []).length >= 2;
+             if (this.regPassword.length >= 10 && tieneMinuscula && (tieneEspecial || variosNumeros || this.regPassword.length >= 12)) {
+                 return 3;
+             }
+             return 2;
+         },
+         get textoSeguridad() {
+             if (this.nivelSeguridad === 1) return 'Contraseña poco segura';
+             if (this.nivelSeguridad === 2) return 'Seguridad media';
+             if (this.nivelSeguridad === 3) return 'Contraseña segura';
+             return '';
+         },
+         validarEnvioRegistro(event) {
+             if (!this.passwordValida) {
+                 event.preventDefault();
+                 this.avisos.password = 'La contraseña debe tener de 8 a 16 caracteres, mínimo 1 mayúscula y 1 número.';
+             } else {
+                 this.avisos.password = '';
              }
          }
      }">
@@ -89,17 +126,11 @@
                             <input id="login-username"
                                    name="username"
                                    type="text"
-                                   maxlength="80"
                                    required
                                    autofocus
-                                   @input="filtrar($event, 'login_username', /[^a-zA-Z0-9@._\-]/g, 'Solo se permiten letras, números, @, punto (.), guion (-) y guion bajo (_).')"
                                    placeholder="jugador@correo.cl o nombre_usuario"
                                    class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
                         </div>
-                        <p x-show="avisos.login_username" x-transition class="text-[11px] font-bold text-error flex items-center gap-1 pt-0.5" style="display: none;">
-                            <span class="material-symbols-outlined text-sm">warning</span>
-                            <span x-text="avisos.login_username"></span>
-                        </p>
                     </div>
 
                     <div class="space-y-1.5">
@@ -114,8 +145,6 @@
                             <input id="login-password"
                                    name="password"
                                    type="password"
-                                   minlength="6"
-                                   maxlength="32"
                                    required
                                    placeholder="••••••••••••"
                                    class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
@@ -176,7 +205,7 @@
                 </div>
 
                 <!-- Registration Form -->
-                <form method="POST" action="{% url 'reservas:registro' %}" class="p-6 sm:p-8 space-y-5">
+                <form method="POST" action="{% url 'reservas:registro' %}" @submit="validarEnvioRegistro($event)" class="p-6 sm:p-8 space-y-5">
                     {% csrf_token %}
                     <div class="space-y-1.5">
                         <label for="reg-fullname" class="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
@@ -293,24 +322,67 @@
                         </div>
                     </div>
 
-                    <div class="space-y-1.5">
+                    <div class="space-y-2">
                         <div class="flex items-center justify-between">
                             <label for="reg-password" class="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
                                 Contraseña de Seguridad <span class="text-primary">*</span>
                             </label>
-                            <span class="text-[11px] font-medium text-stone-500">Entre 6 y 32 caracteres</span>
+                            <span class="text-[11px] font-semibold text-stone-500">8 a 16 caracteres • 1 Mayúscula • 1 Número</span>
                         </div>
                         <div class="relative flex items-center">
                             <span class="material-symbols-outlined absolute left-3.5 text-stone-400 text-lg pointer-events-none">password</span>
                             <input id="reg-password"
                                    name="password"
                                    type="password"
-                                   minlength="6"
-                                   maxlength="32"
+                                   x-model="regPassword"
+                                   @input="avisos.password = ''"
+                                   minlength="8"
+                                   maxlength="16"
                                    required
-                                   placeholder="Crea una contraseña segura (mín. 6 caracteres)"
+                                   placeholder="De 8 a 16 caracteres (mín. 1 mayúscula y 1 número)"
                                    class="w-full pl-11 pr-4 py-3 bg-surface-container-low dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl text-sm font-medium text-on-surface dark:text-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"/>
                         </div>
+
+                        <!-- Medidor de Seguridad en Tiempo Real -->
+                        <div x-show="regPassword.length > 0" x-transition class="pt-1 space-y-2" style="display: none;">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-bold text-stone-600 dark:text-stone-400">Nivel de seguridad:</span>
+                                <span class="font-headline font-extrabold uppercase tracking-wider"
+                                      :class="{
+                                          'text-error': nivelSeguridad === 1,
+                                          'text-amber-600 dark:text-amber-400': nivelSeguridad === 2,
+                                          'text-emerald-600 dark:text-emerald-400': nivelSeguridad === 3
+                                      }"
+                                      x-text="textoSeguridad"></span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-1.5 h-2">
+                                <div class="rounded-full transition-colors duration-200"
+                                     :class="nivelSeguridad >= 1 ? (nivelSeguridad === 1 ? 'bg-error' : (nivelSeguridad === 2 ? 'bg-amber-500' : 'bg-emerald-600')) : 'bg-stone-200 dark:bg-stone-700'"></div>
+                                <div class="rounded-full transition-colors duration-200"
+                                     :class="nivelSeguridad >= 2 ? (nivelSeguridad === 2 ? 'bg-amber-500' : 'bg-emerald-600') : 'bg-stone-200 dark:bg-stone-700'"></div>
+                                <div class="rounded-full transition-colors duration-200"
+                                     :class="nivelSeguridad === 3 ? 'bg-emerald-600' : 'bg-stone-200 dark:bg-stone-700'"></div>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-3 text-[11px] font-semibold pt-0.5">
+                                <span class="inline-flex items-center gap-1" :class="tieneLongitud ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-500'">
+                                    <span class="material-symbols-outlined text-sm" x-text="tieneLongitud ? 'check_circle' : 'radio_button_unchecked'"></span>
+                                    <span>8 a 16 caracteres</span>
+                                </span>
+                                <span class="inline-flex items-center gap-1" :class="tieneMayuscula ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-500'">
+                                    <span class="material-symbols-outlined text-sm" x-text="tieneMayuscula ? 'check_circle' : 'radio_button_unchecked'"></span>
+                                    <span>Mínimo 1 mayúscula</span>
+                                </span>
+                                <span class="inline-flex items-center gap-1" :class="tieneNumero ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-500'">
+                                    <span class="material-symbols-outlined text-sm" x-text="tieneNumero ? 'check_circle' : 'radio_button_unchecked'"></span>
+                                    <span>Mínimo 1 número</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <p x-show="avisos.password" x-transition class="text-[11px] font-bold text-error flex items-center gap-1 pt-0.5" style="display: none;">
+                            <span class="material-symbols-outlined text-sm">warning</span>
+                            <span x-text="avisos.password"></span>
+                        </p>
                     </div>
 
                     <!-- Email Notification & Validation Callout -->

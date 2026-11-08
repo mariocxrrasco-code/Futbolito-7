@@ -470,8 +470,12 @@ class RegistroClienteView(View):
             messages.error(request, "Las contraseñas ingresadas no coinciden.")
             return render(request, self.template_name, {"form_data": request.POST})
 
-        if len(password) < 6 or len(password) > 32:
-            messages.error(request, "La contraseña debe tener entre 6 y 32 caracteres.")
+        if len(password) < 8 or len(password) > 16:
+            messages.error(request, "La contraseña debe tener entre 8 y 16 caracteres.")
+            return render(request, self.template_name, {"form_data": request.POST})
+
+        if not any(c.isupper() for c in password) or not any(c.isdigit() for c in password):
+            messages.error(request, "La contraseña debe incluir obligatorio al menos 1 letra mayúscula y 1 número.")
             return render(request, self.template_name, {"form_data": request.POST})
 
         username_final = username_input or email
