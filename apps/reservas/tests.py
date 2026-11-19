@@ -499,3 +499,32 @@ class RetroalimentacionDocenteEvaluationTests(TestCase):
         self.assertEqual(historial.count(), 2)
         self.assertEqual(historial[0].administrador, self.admin_1)
         self.assertEqual(historial[1].administrador, self.admin_2)
+
+    def test_saneamiento_backend_login_contra_inyeccion_burpsuite(self):
+        """
+        Verifica que incluso si se intercepta el POST de /login/ (ej. con Burp Suite Proxy)
+        para inyectar SQLi o XSS, el backend lo bloquea antes de consultar la BD.
+        """
+        url_login = reverse("reservas:login")
+        payloads_maliciosos = [
+            "' OR '1'='1",
+            "admin'--",
+            "<script>alert(1)</script>",
+            "mario@futbolito7.cl; DROP TABLE auth_user;--",
+        ]
+        for payload in payloads_maliciosos:
+            resp = self.client.post(url_login, {
+                "username": payload,
+                "password": "CualquierPassword1!",
+            })
+            self.assertEqual(resp.status_code, 200)
+            self.assertFalse(resp.wsgi_request.user.is_authenticated)
+            self.assertContains(resp, "Entrada bloqueada por seguridad")
+
+        # Un usuario legítimo válido (por username o email) sigue funcionando sin problema
+        resp_ok = self.client.post(url_login, {
+            "username": "paulo_cliente",
+            "password": "ClientePassword123!",
+        })
+        self.assertEqual(resp_ok.status_code, 302)
+        self.assertTrue(resp_ok.wsgi_request.user.is_authenticated)

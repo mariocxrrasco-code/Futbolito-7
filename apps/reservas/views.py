@@ -536,6 +536,24 @@ class LoginUsuarioView(View):
         identificador = request.POST.get("username", "").strip()
         password = request.POST.get("password", "")
 
+        if not identificador or not password:
+            messages.error(request, "Debes ingresar tu usuario/correo y contraseña.")
+            return render(request, self.template_name)
+
+        if len(identificador) > 100 or not re.match(r"^[a-zA-Z0-9@._+\-]+$", identificador):
+            messages.error(
+                request,
+                "⚠️ Entrada bloqueada por seguridad: el usuario o correo contiene caracteres no permitidos."
+            )
+            return render(request, self.template_name)
+
+        if len(password) > 64 or any(c in password for c in ("<", ">", "\x00")):
+            messages.error(
+                request,
+                "⚠️ Entrada bloqueada por seguridad: la contraseña contiene caracteres no válidos."
+            )
+            return render(request, self.template_name)
+
         user_obj = User.objects.filter(email__iexact=identificador).first()
         username_to_auth = user_obj.username if user_obj else identificador
 
@@ -677,6 +695,10 @@ class AdminResolverReservaView(View):
         decision = request.POST.get("decision", "").strip().upper()
         motivo = request.POST.get("motivo", "").strip()
 
+        if any(c in motivo for c in ("<", ">", "\x00")) or len(motivo) > 255:
+            messages.error(request, "⚠️ Entrada bloqueada: la observación contiene caracteres no permitidos.")
+            return redirect("reservas:panel_admin")
+
         try:
             reserva = ReservaService.resolver_reserva_admin(
                 reserva_id=reserva_id,
@@ -711,6 +733,10 @@ class AdminEditarCanchaView(View):
 
         nuevo_nombre = request.POST.get("nombre", "").strip()
         nuevas_medidas = request.POST.get("medidas", "").strip()
+
+        if any(any(ch in campo for ch in ("<", ">", "\x00")) for campo in (nuevo_nombre, nuevas_medidas)):
+            messages.error(request, "⚠️ Entrada bloqueada: el nombre o las medidas contienen caracteres no permitidos.")
+            return redirect("reservas:panel_admin")
         nueva_superficie_id = request.POST.get("superficie_id")
         nuevo_precio = request.POST.get("precio_base")
         nuevo_estado = request.POST.get("estado", "").strip()
