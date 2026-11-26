@@ -67,6 +67,35 @@ class Command(BaseCommand):
             },
         )
 
+        # Cuenta Admin dedicada para Auditoría EV4 (Equipo Poké Binder — Alan Ávila)
+        admin_alan, _ = User.objects.get_or_create(
+            username="admin_alan",
+            defaults={
+                "email": "alan.admin@futbolito7.cl",
+                "first_name": "Alan",
+                "last_name": "Ávila (Admin)",
+                "is_staff": True,
+                "is_superuser": False,
+            },
+        )
+        admin_alan.email = "alan.admin@futbolito7.cl"
+        admin_alan.first_name = "Alan"
+        admin_alan.last_name = "Ávila (Admin)"
+        admin_alan.is_staff = True
+        admin_alan.is_superuser = False
+        admin_alan.set_password("AuditAdmin26!")
+        admin_alan.save()
+        PerfilUsuario.objects.update_or_create(
+            usuario=admin_alan,
+            defaults={
+                "rol": PerfilUsuario.Rol.ADMIN,
+                "rut": "19.555.666-7",
+                "telefono": "+56 9 8555 6677",
+                "cuenta_validada": True,
+                "suspendido": False,
+            },
+        )
+
         # 2. Cuentas de Clientes Validados (Con correos Yopmail para pruebas de notificación)
         cliente_paulo, created_p = User.objects.get_or_create(
             username="cliente_paulo",
@@ -113,6 +142,33 @@ class Command(BaseCommand):
                 "rut": "20.987.654-K",
                 "telefono": "+56 9 9876 5432",
                 "cuenta_validada": True,
+            },
+        )
+
+        # Cuenta Cliente dedicada para Auditoría EV4 (Equipo Poké Binder — Alan Ávila)
+        cliente_alan, _ = User.objects.get_or_create(
+            username="cliente_alan",
+            defaults={
+                "email": "alan.futbolito7@yopmail.com",
+                "first_name": "Alan",
+                "last_name": "Ávila",
+                "is_staff": False,
+            },
+        )
+        cliente_alan.email = "alan.futbolito7@yopmail.com"
+        cliente_alan.first_name = "Alan"
+        cliente_alan.last_name = "Ávila"
+        cliente_alan.is_staff = False
+        cliente_alan.set_password("AuditCliente26!")
+        cliente_alan.save()
+        PerfilUsuario.objects.update_or_create(
+            usuario=cliente_alan,
+            defaults={
+                "rol": PerfilUsuario.Rol.CLIENTE,
+                "rut": "21.555.666-7",
+                "telefono": "+56 9 9555 6677",
+                "cuenta_validada": True,
+                "suspendido": False,
             },
         )
 
