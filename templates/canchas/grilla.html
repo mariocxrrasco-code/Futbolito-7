@@ -636,11 +636,11 @@
                         };
                         this.cargarBloques();
                         window.scrollTo({ top: 0, behavior: 'smooth' });
-                    } else if (res.status === 409 || res.status === 400 || res.status === 401 || res.status === 403) {
+                    } else if (res.status === 409 || res.status === 400 || res.status === 401 || res.status === 403 || res.status === 429) {
                         this.modalAbierto = false;
                         this.alerta = {
-                            titulo: 'Reserva No Procesada (Regla de Negocio Activa)',
-                            mensaje: data.detail || 'No se pudo completar la reserva.',
+                            titulo: res.status === 429 ? 'Límite de Solicitudes Alcanzado' : 'Reserva No Procesada (Regla de Negocio Activa)',
+                            mensaje: data.detail || data.detalle || 'No se pudo completar la reserva.',
                             tipo: 'conflict',
                             codigoReserva: null
                         };
@@ -690,6 +690,10 @@
             },
 
             getCSRFToken() {
+                const meta = document.querySelector('meta[name="csrf-token"]');
+                if (meta && meta.content && meta.content !== 'NOTPROVIDED') {
+                    return meta.content;
+                }
                 let cookieValue = null;
                 if (document.cookie && document.cookie !== '') {
                     const cookies = document.cookie.split(';');
@@ -701,7 +705,7 @@
                         }
                     }
                 }
-                return cookieValue || 'dummy-token';
+                return cookieValue || '';
             }
         }
     }

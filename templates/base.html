@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta name="csrf-token" content="{{ csrf_token }}"/>
     <title>{% block title %}FUTBOLITO 7 CLUB DEPORTIVO — Reservas en Tiempo Real{% endblock %}</title>
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -209,10 +210,13 @@
                         Mis Reservas
                     </a>
                     {% endif %}
-                    <a href="{% url 'reservas:logout' %}"
-                       class="inline-flex items-center px-space-md py-space-xs font-label-md text-label-md uppercase tracking-wider text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors">
-                        Cerrar Sesión
-                    </a>
+                    <form method="POST" action="{% url 'reservas:logout' %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="inline-flex items-center px-space-md py-space-xs font-label-md text-label-md uppercase tracking-wider text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors cursor-pointer">
+                            Cerrar Sesión
+                        </button>
+                    </form>
                     <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
                         <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
                     </div>

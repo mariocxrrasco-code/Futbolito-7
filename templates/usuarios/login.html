@@ -155,6 +155,7 @@
                 <!-- Login Form -->
                 <form method="POST" action="{% url 'reservas:login' %}" class="p-6 sm:p-8 space-y-5">
                     {% csrf_token %}
+                    {% if request.GET.next %}<input type="hidden" name="next" value="{{ request.GET.next }}"/>{% endif %}
                     <div class="space-y-1.5">
                         <label for="login-username" class="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
                             Usuario o Correo Electrónico

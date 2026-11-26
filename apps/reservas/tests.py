@@ -150,23 +150,58 @@ class ReservasModelAndServiceTests(TestCase):
         self.assertGreaterEqual(len(response.data["bloques"]), 1)
 
     def test_api_reservar_flujo_y_conflicto_409(self):
-        """Verifica el endpoint POST /api/reservar/ para éxito (201) y conflicto (409)."""
+        """Verifica el endpoint POST /api/reservar/ autenticado para éxito (201) y conflicto (409)."""
+        from django.contrib.auth.models import User
+        from apps.reservas.models import PerfilUsuario
+
+        manana = timezone.localdate() + datetime.timedelta(days=1)
+        bloque_futuro = BloqueHorario.objects.create(
+            cancha=self.cancha,
+            fecha=manana,
+            hora_inicio=datetime.time(19, 0),
+            hora_fin=datetime.time(20, 0),
+            precio=36000,
+            es_punta=True,
+            estado=BloqueHorario.Estado.DISPONIBLE,
+        )
+
+        cli_1 = User.objects.create_user(
+            username="eliezer_cli",
+            email="eliezer@test.cl",
+            password="PasswordSegura1!",
+            first_name="Eliezer",
+            last_name="Zenteno",
+        )
+        PerfilUsuario.objects.create(
+            usuario=cli_1, rol="CLIENTE", rut="20.111.222-3", telefono="+56933334444", cuenta_validada=True
+        )
+
+        cli_2 = User.objects.create_user(
+            username="segundo_cli",
+            email="segundo@test.cl",
+            password="PasswordSegura1!",
+            first_name="Segundo",
+            last_name="Jugador",
+        )
+        PerfilUsuario.objects.create(
+            usuario=cli_2, rol="CLIENTE", rut="20.444.555-6", telefono="+56955556666", cuenta_validada=True
+        )
+
         url = reverse("reservas:api_reservar")
         payload = {
-            "bloque_id": self.bloque.id,
-            "nombre_cliente": "Eliezer Zenteno",
-            "telefono_cliente": "+56933334444",
-            "email_cliente": "eliezer@test.cl",
+            "bloque_id": bloque_futuro.id,
             "notas": "Partido final"
         }
 
-        # 1. Petición inicial: 201 Created
+        # 1. Petición inicial autenticada como Cliente 1: 201 Created
+        self.client.force_authenticate(user=cli_1)
         res1 = self.client.post(url, data=payload, format="json")
         self.assertEqual(res1.status_code, status.HTTP_201_CREATED)
         self.assertIn("reserva", res1.data)
         self.assertIn("email_enmascarado", res1.data["reserva"])
 
-        # 2. Petición duplicada inmediata: 409 Conflict (Prevención de overbooking)
+        # 2. Petición de Cliente 2 sobre el mismo bloque: 409 Conflict (Prevención de overbooking)
+        self.client.force_authenticate(user=cli_2)
         res2 = self.client.post(url, data=payload, format="json")
         self.assertEqual(res2.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(res2.data.get("codigo"), "OVERBOOKING_PREVENTED")
@@ -528,3 +563,313 @@ class RetroalimentacionDocenteEvaluationTests(TestCase):
         })
         self.assertEqual(resp_ok.status_code, 302)
         self.assertTrue(resp_ok.wsgi_request.user.is_authenticated)
+
+
+class AuditoriaSeguridadOWASPTests(TestCase):
+    """
+    Suite de blindaje OWASP Top 10 / ISO 27034 para auditoría cruzada de URL en producción.
+    """
+    def setUp(self):
+        from django.contrib.auth.models import User
+        from django.core.cache import cache
+        from apps.reservas.models import PerfilUsuario
+
+        cache.clear()
+        self.api = APIClient()
+        self.complejo = Complejo.objects.create(
+            nombre="Complejo Auditado",
+            direccion="Av. Seguridad 100",
+            comuna="Concepción"
+        )
+        self.superficie = Superficie.objects.create(nombre="Césped FIFA Audit")
+        self.cancha = Cancha.objects.create(
+            complejo=self.complejo,
+            nombre="Cancha Blindada 1",
+            superficie=self.superficie,
+            precio_base=30000,
+            estado="OPERATIVA"
+        )
+        self.manana = timezone.localdate() + datetime.timedelta(days=1)
+        self.bloque = BloqueHorario.objects.create(
+            cancha=self.cancha,
+            fecha=self.manana,
+            hora_inicio=datetime.time(20, 0),
+            hora_fin=datetime.time(21, 0),
+            precio=30000,
+            es_punta=True,
+            estado=BloqueHorario.Estado.DISPONIBLE
+        )
+
+        self.admin = User.objects.create_user(
+            username="admin_audit",
+            email="admin_audit@futbolito7.cl",
+            password="AdminPassword123!",
+            is_staff=True
+        )
+        self.perfil_admin = PerfilUsuario.objects.create(
+            usuario=self.admin, rol="ADMIN", cuenta_validada=True
+        )
+
+        self.cliente_a = User.objects.create_user(
+            username="cliente_a",
+            email="cliente_a@yopmail.com",
+            password="ClientePassword123!",
+            first_name="Cliente",
+            last_name="Alfa"
+        )
+        self.perfil_a = PerfilUsuario.objects.create(
+            usuario=self.cliente_a,
+            rol="CLIENTE",
+            rut="20.111.111-1",
+            telefono="+56 9 1111 1111",
+            cuenta_validada=True
+        )
+
+        self.cliente_b = User.objects.create_user(
+            username="cliente_b",
+            email="cliente_b@yopmail.com",
+            password="ClientePassword123!",
+            first_name="Cliente",
+            last_name="Beta"
+        )
+        self.perfil_b = PerfilUsuario.objects.create(
+            usuario=self.cliente_b,
+            rol="CLIENTE",
+            rut="20.222.222-2",
+            telefono="+56 9 2222 2222",
+            cuenta_validada=True
+        )
+
+    def test_cabeceras_seguridad_http_y_cache_control(self):
+        """OWASP A05: Verifica CSP, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy y Cache-Control."""
+        resp_home = self.client.get(reverse("reservas:grilla"))
+        self.assertEqual(resp_home.status_code, 200)
+        self.assertIn("Content-Security-Policy", resp_home)
+        self.assertIn("frame-ancestors 'none'", resp_home["Content-Security-Policy"])
+        self.assertEqual(resp_home["X-Frame-Options"], "DENY")
+        self.assertEqual(resp_home["X-Content-Type-Options"], "nosniff")
+        self.assertEqual(resp_home["Referrer-Policy"], "strict-origin-when-cross-origin")
+        self.assertIn("Permissions-Policy", resp_home)
+        self.assertEqual(resp_home["Cross-Origin-Opener-Policy"], "same-origin")
+
+        resp_login = self.client.get(reverse("reservas:login"))
+        self.assertIn("no-store", resp_login["Cache-Control"])
+
+    def test_api_reservar_sin_bypass_modo_web_ni_suplantacion(self):
+        """OWASP A01 / A04: Impide bypass anónimo con modo_web=False, bloqueo a Admin y suplantación de identidad."""
+        url = reverse("reservas:api_reservar")
+        payload_bypass = {
+            "bloque_id": self.bloque.id,
+            "modo_web": False,
+            "nombre_cliente": "Atacante Anónimo",
+            "email_cliente": "atacante@evil.cl",
+            "telefono_cliente": "+56900000000",
+            "rut_cliente": "11.111.111-1",
+        }
+
+        # Anónimo intentando bypass con modo_web=False -> 401
+        resp_anon = self.api.post(url, data=payload_bypass, format="json")
+        self.assertEqual(resp_anon.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        # Admin intentando bypass con modo_web=False -> 403
+        self.api.force_authenticate(user=self.admin)
+        resp_admin = self.api.post(url, data=payload_bypass, format="json")
+        self.assertEqual(resp_admin.status_code, status.HTTP_403_FORBIDDEN)
+
+        # Cliente autenticado intentando suplantar datos de otro usuario -> backend ignora payload y usa su perfil real
+        self.api.force_authenticate(user=self.cliente_a)
+        resp_cli = self.api.post(url, data=payload_bypass, format="json")
+        self.assertEqual(resp_cli.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(resp_cli.data["estado_reserva"], Reserva.EstadoReserva.EN_ESPERA)
+        self.assertEqual(resp_cli.data["nombre_cliente"], "Cliente Alfa")
+        self.assertEqual(resp_cli.data["reserva"]["rut_cliente"], "20.111.111-1")
+
+    def test_api_test_concurrencia_restringida_a_admin(self):
+        """OWASP A01: Impide DoS anónimo o de clientes sobre /api/test-concurrencia/."""
+        url = reverse("reservas:api_test_concurrencia")
+        self.assertEqual(self.api.post(url).status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.api.force_authenticate(user=self.cliente_a)
+        self.assertEqual(self.api.post(url).status_code, status.HTTP_403_FORBIDDEN)
+
+        self.api.force_authenticate(user=self.admin)
+        self.assertEqual(self.api.post(url).status_code, status.HTTP_200_OK)
+
+    def test_comprobante_proteccion_anti_idor(self):
+        """OWASP A01 (IDOR): Solo el dueño de la reserva o un Admin pueden ver /comprobante/<uuid>/."""
+        reserva = ReservaService.bloquear_bloque_concurrente(
+            bloque_id=self.bloque.id,
+            usuario=self.cliente_a,
+            rut_cliente="20.111.111-1",
+            nombre_cliente="Cliente Alfa",
+            telefono_cliente="+56 9 1111 1111",
+            email_cliente="cliente_a@yopmail.com",
+            validar_ventana=True,
+        )
+        url = reverse("reservas:comprobante", args=[reserva.codigo])
+
+        # Anónimo -> redirige a login
+        resp_anon = self.client.get(url)
+        self.assertEqual(resp_anon.status_code, 302)
+        self.assertIn("/login/", resp_anon.url)
+
+        # Otro cliente (IDOR) -> 403 Forbidden
+        self.client.force_login(self.cliente_b)
+        resp_idor = self.client.get(url)
+        self.assertEqual(resp_idor.status_code, 403)
+
+        # Titular legítimo -> 200 OK
+        self.client.force_login(self.cliente_a)
+        self.assertEqual(self.client.get(url).status_code, 200)
+
+        # Administrador -> 200 OK
+        self.client.force_login(self.admin)
+        self.assertEqual(self.client.get(url).status_code, 200)
+
+    def test_token_validacion_unico_uso_y_bloqueo_suspendido(self):
+        """OWASP A07: El enlace de validación rota el token (1 solo uso) y bloquea cuentas suspendidas."""
+        from django.contrib.auth.models import User
+        from apps.reservas.models import PerfilUsuario
+
+        user_nuevo = User.objects.create_user(
+            username="nuevo_token", email="nuevo@yopmail.com", password="Password123!"
+        )
+        perfil = PerfilUsuario.objects.create(
+            usuario=user_nuevo, rol="CLIENTE", cuenta_validada=False, suspendido=False
+        )
+        token_inicial = perfil.token_validacion
+        url_validar = reverse("reservas:validar_cuenta", args=[token_inicial])
+
+        # Primer uso válido -> activa y rota token
+        resp1 = self.client.get(url_validar)
+        self.assertEqual(resp1.status_code, 302)
+        perfil.refresh_from_db()
+        self.assertTrue(perfil.cuenta_validada)
+        self.assertNotEqual(perfil.token_validacion, token_inicial)
+
+        # Reutilización del mismo enlace -> 404 (no sirve como puerta trasera sin contraseña)
+        self.client.logout()
+        resp2 = self.client.get(url_validar)
+        self.assertEqual(resp2.status_code, 404)
+
+        # Cuenta suspendida no puede auto-loguearse por token
+        perfil.cuenta_validada = False
+        perfil.suspendido = True
+        perfil.save()
+        url_susp = reverse("reservas:validar_cuenta", args=[perfil.token_validacion])
+        resp_susp = self.client.get(url_susp)
+        self.assertEqual(resp_susp.status_code, 302)
+        self.assertFalse(resp_susp.wsgi_request.user.is_authenticated)
+
+    def test_logout_requiere_post_y_rechaza_get(self):
+        """OWASP A01 (Logout CSRF): GET /logout/ debe responder 405 sin cerrar sesión; POST sí cierra."""
+        self.client.force_login(self.cliente_a)
+        resp_get = self.client.get(reverse("reservas:logout"))
+        self.assertEqual(resp_get.status_code, 405)
+        self.assertTrue(self.client.session.get("_auth_user_id"))
+
+        resp_post = self.client.post(reverse("reservas:logout"))
+        self.assertEqual(resp_post.status_code, 302)
+        self.assertFalse(self.client.session.get("_auth_user_id"))
+
+    def test_rate_limit_fuerza_bruta_login_y_open_redirect(self):
+        """OWASP A07 / A01: Bloquea fuerza bruta con HTTP 429 y rechaza Open Redirect en ?next=."""
+        url_login = reverse("reservas:login")
+        for _ in range(5):
+            r = self.client.post(url_login, {"username": "cliente_a", "password": "WrongPassword1!"})
+            self.assertEqual(r.status_code, 200)
+
+        # 6to intento bloqueado con 429 Too Many Requests
+        r_bloqueado = self.client.post(url_login, {"username": "cliente_a", "password": "ClientePassword123!"})
+        self.assertEqual(r_bloqueado.status_code, 429)
+
+        # Open Redirect bloqueado para otro usuario no bloqueado
+        r_redir = self.client.post(
+            url_login,
+            {
+                "username": "cliente_b",
+                "password": "ClientePassword123!",
+                "next": "https://evil.example.com/phishing",
+            },
+        )
+        self.assertEqual(r_redir.status_code, 302)
+        self.assertFalse(r_redir.url.startswith("https://evil.example.com"))
+
+    def test_admin_inputs_malformados_sin_500_y_proteccion_cuentas_admin(self):
+        """OWASP A03 / A01: Inputs extremos en Admin no causan HTTP 500 y no se puede suspender un Admin."""
+        self.client.force_login(self.admin)
+        url_editar = reverse("reservas:admin_editar_cancha", args=[self.cancha.id])
+
+        # superficie_id no numérico y precio negativo/NaN -> redirige con alerta, nunca 500
+        for bad_data in [
+            {"superficie_id": "abc", "precio_base": "30000"},
+            {"superficie_id": str(self.superficie.id), "precio_base": "-50000"},
+            {"superficie_id": str(self.superficie.id), "precio_base": "NaN"},
+            {"nombre": "A" * 150, "medidas": "40x20"},
+        ]:
+            resp = self.client.post(url_editar, bad_data)
+            self.assertEqual(resp.status_code, 302)
+
+        # Intentar suspender perfil Admin -> 403 Forbidden
+        url_gestionar = reverse("reservas:admin_gestionar_jugador", args=[self.perfil_admin.id])
+        resp_susp_admin = self.client.post(url_gestionar, {"accion": "toggle_suspension"})
+        self.assertEqual(resp_susp_admin.status_code, 403)
+        self.perfil_admin.refresh_from_db()
+        self.assertFalse(self.perfil_admin.suspendido)
+
+    def test_reserva_web_con_csrf_enforced_y_meta_token(self):
+        """Rúbrica EV4 (Criterios 5 y 7): Verifica POST /api/reservar/ y POST /logout/ con CSRF estricto."""
+        import json
+        import re
+        from django.test import Client
+
+        csrf_client = Client(enforce_csrf_checks=True)
+        # 1. Login vía POST con CSRF real
+        get_login = csrf_client.get(reverse("reservas:login"))
+        match_csrf = re.search(r'name="csrfmiddlewaretoken"\s+value="([^"]+)"', get_login.content.decode())
+        self.assertIsNotNone(match_csrf)
+        resp_login = csrf_client.post(
+            reverse("reservas:login"),
+            {
+                "csrfmiddlewaretoken": match_csrf.group(1),
+                "username": "cliente_a",
+                "password": "ClientePassword123!",
+            },
+        )
+        self.assertEqual(resp_login.status_code, 302)
+
+        # 2. Leer <meta name="csrf-token"> desde / (funciona incluso con CSRF_COOKIE_HTTPONLY=True)
+        get_home = csrf_client.get(reverse("reservas:grilla"))
+        self.assertEqual(get_home.status_code, 200)
+        self.assertIn("no-store", get_home["Cache-Control"])
+        match_meta = re.search(r'<meta name="csrf-token" content="([^"]+)"/>', get_home.content.decode())
+        self.assertIsNotNone(match_meta)
+        csrf_token = match_meta.group(1)
+
+        # 3. Sin header X-CSRFToken -> 403 Forbidden
+        url_reservar = reverse("reservas:api_reservar")
+        resp_sin_csrf = csrf_client.post(
+            url_reservar,
+            data=json.dumps({"bloque_id": self.bloque.id, "notas": "Sin token"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp_sin_csrf.status_code, 403)
+
+        # 4. Con header X-CSRFToken leído del meta -> 201 Created
+        resp_con_csrf = csrf_client.post(
+            url_reservar,
+            data=json.dumps({"bloque_id": self.bloque.id, "notas": "Partido auditado"}),
+            content_type="application/json",
+            HTTP_X_CSRFTOKEN=csrf_token,
+        )
+        self.assertEqual(resp_con_csrf.status_code, 201)
+
+        # 5. Logout con POST + CSRF y verificar que vista privada vuelve a pedir login
+        resp_logout = csrf_client.post(
+            reverse("reservas:logout"),
+            {"csrfmiddlewaretoken": csrf_token},
+        )
+        self.assertEqual(resp_logout.status_code, 302)
+        resp_priv = csrf_client.get(reverse("reservas:mis_reservas"))
+        self.assertEqual(resp_priv.status_code, 302)
+        self.assertIn("/login/", resp_priv.url)

@@ -1,4 +1,5 @@
 from django.urls import path
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from apps.canchas.models import Cancha
@@ -8,6 +9,8 @@ app_name = "canchas"
 
 
 class ApiCanchasListView(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request):
         canchas = Cancha.objects.filter(activa=True).select_related("superficie", "complejo")
         return Response(CanchaSerializer(canchas, many=True).data)

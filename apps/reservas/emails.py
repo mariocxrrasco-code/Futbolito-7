@@ -1,8 +1,9 @@
+import http.client
 import json
 import threading
-import urllib.request
 from django.core.mail import EmailMultiAlternatives, get_connection
 from django.conf import settings
+from django.utils.html import escape
 
 
 def _despachar_correo_seguro(
@@ -26,7 +27,6 @@ def _despachar_correo_seguro(
         api_key = getattr(settings, "BREVO_API_KEY", "")
         if api_key:
             try:
-                url = "https://api.brevo.com/v3/smtp/email"
                 headers = {
                     "accept": "application/json",
                     "api-key": api_key,
@@ -48,13 +48,20 @@ def _despachar_correo_seguro(
                 if html_content:
                     payload["htmlContent"] = html_content
 
-                req = urllib.request.Request(
-                    url,
-                    data=json.dumps(payload).encode("utf-8"),
-                    headers=headers,
-                )
-                with urllib.request.urlopen(req, timeout=8):
-                    return
+                conn_https = http.client.HTTPSConnection("api.brevo.com", timeout=8)
+                try:
+                    conn_https.request(
+                        "POST",
+                        "/v3/smtp/email",
+                        body=json.dumps(payload).encode("utf-8"),
+                        headers=headers,
+                    )
+                    resp = conn_https.getresponse()
+                    resp.read()
+                    if 200 <= resp.status < 300:
+                        return
+                finally:
+                    conn_https.close()
             except Exception:
                 pass
 
@@ -140,11 +147,23 @@ def enviar_correo_documento_reserva(reserva, request=None) -> bool:
         f"Ver Documento Oficial de Reserva en línea:\n{url_comprobante}\n"
     )
 
+    nombre_cliente_h = escape(reserva.nombre_cliente)
+    rut_cliente_h = escape(reserva.rut_cliente or "Registrado en perfil")
+    telefono_h = escape(reserva.telefono_cliente)
+    email_h = escape(reserva.email_cliente)
+    complejo_h = escape(complejo.nombre)
+    cancha_h = escape(cancha.nombre)
+    medidas_h = escape(cancha.medidas)
+    superficie_h = escape(cancha.superficie.nombre)
+    admin_h = escape(admin_nombre)
+    motivo_h = escape(reserva.motivo_decision or "En espera de confirmación por recepción.")
+    url_comprobante_h = escape(url_comprobante)
+
     html_content = f"""
     <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 640px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; background-color: #ffffff; color: #1e293b;">
         <div style="background-color: #0f172a; padding: 24px; text-align: center; color: #ffffff;">
             <h1 style="margin: 0; font-size: 22px; letter-spacing: 1px;">⚽ FUTBOLITO 7 — DOCUMENTO DE RESERVA</h1>
-            <p style="margin: 6px 0 0; font-size: 12px; color: #94a3b8;">Código Oficial: {reserva.codigo}</p>
+            <p style="margin: 6px 0 0; font-size: 12px; color: #94a3b8;">Código Oficial: {escape(str(reserva.codigo))}</p>
         </div>
 
         <div style="padding: 24px;">
@@ -155,18 +174,18 @@ def enviar_correo_documento_reserva(reserva, request=None) -> bool:
 
             <h3 style="font-size: 14px; text-transform: uppercase; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">1. Datos del Cliente</h3>
             <table style="width: 100%; font-size: 14px; margin-bottom: 20px;">
-                <tr><td style="padding: 4px 0; color: #64748b;">Nombre Titular:</td><td style="padding: 4px 0; font-weight: bold;">{reserva.nombre_cliente}</td></tr>
-                <tr><td style="padding: 4px 0; color: #64748b;">RUT:</td><td style="padding: 4px 0; font-weight: bold;">{reserva.rut_cliente or 'Registrado en perfil'}</td></tr>
-                <tr><td style="padding: 4px 0; color: #64748b;">Teléfono:</td><td style="padding: 4px 0;">{reserva.telefono_cliente}</td></tr>
-                <tr><td style="padding: 4px 0; color: #64748b;">Correo Electrónico:</td><td style="padding: 4px 0;">{reserva.email_cliente}</td></tr>
+                <tr><td style="padding: 4px 0; color: #64748b;">Nombre Titular:</td><td style="padding: 4px 0; font-weight: bold;">{nombre_cliente_h}</td></tr>
+                <tr><td style="padding: 4px 0; color: #64748b;">RUT:</td><td style="padding: 4px 0; font-weight: bold;">{rut_cliente_h}</td></tr>
+                <tr><td style="padding: 4px 0; color: #64748b;">Teléfono:</td><td style="padding: 4px 0;">{telefono_h}</td></tr>
+                <tr><td style="padding: 4px 0; color: #64748b;">Correo Electrónico:</td><td style="padding: 4px 0;">{email_h}</td></tr>
             </table>
 
             <h3 style="font-size: 14px; text-transform: uppercase; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">2. Datos de la Cancha Solicitada</h3>
             <table style="width: 100%; font-size: 14px; margin-bottom: 20px;">
-                <tr><td style="padding: 4px 0; color: #64748b;">Complejo:</td><td style="padding: 4px 0; font-weight: bold;">{complejo.nombre}</td></tr>
-                <tr><td style="padding: 4px 0; color: #64748b;">Cancha:</td><td style="padding: 4px 0; font-weight: bold; color: #0f172a;">{cancha.nombre}</td></tr>
-                <tr><td style="padding: 4px 0; color: #64748b;">Medidas Oficiales:</td><td style="padding: 4px 0;">{cancha.medidas}</td></tr>
-                <tr><td style="padding: 4px 0; color: #64748b;">Superficie:</td><td style="padding: 4px 0;">{cancha.superficie.nombre} ({'Techada' if cancha.techada else 'Al Aire Libre'})</td></tr>
+                <tr><td style="padding: 4px 0; color: #64748b;">Complejo:</td><td style="padding: 4px 0; font-weight: bold;">{complejo_h}</td></tr>
+                <tr><td style="padding: 4px 0; color: #64748b;">Cancha:</td><td style="padding: 4px 0; font-weight: bold; color: #0f172a;">{cancha_h}</td></tr>
+                <tr><td style="padding: 4px 0; color: #64748b;">Medidas Oficiales:</td><td style="padding: 4px 0;">{medidas_h}</td></tr>
+                <tr><td style="padding: 4px 0; color: #64748b;">Superficie:</td><td style="padding: 4px 0;">{superficie_h} ({'Techada' if cancha.techada else 'Al Aire Libre'})</td></tr>
                 <tr><td style="padding: 4px 0; color: #64748b;">Fecha del Partido:</td><td style="padding: 4px 0; font-weight: bold;">{fecha_str}</td></tr>
                 <tr><td style="padding: 4px 0; color: #64748b;">Bloque Horario:</td><td style="padding: 4px 0; font-weight: bold; color: #16a34a;">{horario_str}</td></tr>
                 <tr><td style="padding: 4px 0; color: #64748b;">Valor Total:</td><td style="padding: 4px 0; font-size: 16px; font-weight: bold;">${reserva.monto_total:,.0f} CLP</td></tr>
@@ -174,12 +193,12 @@ def enviar_correo_documento_reserva(reserva, request=None) -> bool:
 
             <h3 style="font-size: 14px; text-transform: uppercase; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">3. Estado de Revisión Administrativa</h3>
             <p style="font-size: 13px; color: #475569; margin: 6px 0;">
-                <strong>Administrador revisor:</strong> {admin_nombre}<br>
-                <strong>Observación:</strong> {reserva.motivo_decision or 'En espera de confirmación por recepción.'}
+                <strong>Administrador revisor:</strong> {admin_h}<br>
+                <strong>Observación:</strong> {motivo_h}
             </p>
 
             <div style="text-align: center; margin-top: 28px;">
-                <a href="{url_comprobante}" style="background-color: #16a34a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                <a href="{url_comprobante_h}" style="background-color: #16a34a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
                     Ver / Imprimir Documento de Reserva
                 </a>
             </div>
@@ -224,6 +243,9 @@ def enviar_correo_validacion_cuenta(perfil, request=None) -> bool:
         f"RUT registrado: {perfil.rut}\n"
         f"Rol asignado: Cliente / Jugador\n"
     )
+    nombre_h = escape(nombre)
+    rut_h = escape(perfil.rut)
+    url_activar_h = escape(url_activar)
     html_validacion = f"""
     <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e7e5e4; border-radius: 16px; overflow: hidden; background-color: #fbf9f4; color: #1b1c19;">
         <div style="background-color: #1c1917; padding: 24px; text-align: center; color: #ffffff;">
@@ -231,19 +253,19 @@ def enviar_correo_validacion_cuenta(perfil, request=None) -> bool:
             <p style="margin: 6px 0 0; font-size: 12px; color: #fe932c;">Portal Oficial de Jugadores</p>
         </div>
         <div style="padding: 28px;">
-            <h2 style="margin-top: 0; color: #a33900;">¡Hola, {nombre}!</h2>
+            <h2 style="margin-top: 0; color: #a33900;">¡Hola, {nombre_h}!</h2>
             <p style="font-size: 14px; line-height: 1.6; color: #44403c;">
-                Tu perfil de <strong>Cliente / Jugador</strong> (RUT: <code>{perfil.rut}</code>) ha sido creado en <strong>Futbolito 7 Club Deportivo</strong>.
+                Tu perfil de <strong>Cliente / Jugador</strong> (RUT: <code>{rut_h}</code>) ha sido creado en <strong>Futbolito 7 Club Deportivo</strong>.
                 Para habilitar la reserva de canchas en tiempo real, confirma tu correo haciendo clic en el botón:
             </p>
             <div style="text-align: center; margin: 28px 0;">
-                <a href="{url_activar}" style="background-color: #a33900; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: bold; font-size: 14px; display: inline-block;">
+                <a href="{url_activar_h}" style="background-color: #a33900; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: bold; font-size: 14px; display: inline-block;">
                     ✓ Validar mi Cuenta en 1 Clic
                 </a>
             </div>
             <p style="font-size: 12px; color: #78716c;">
                 O copia y pega este enlace en tu navegador:<br>
-                <a href="{url_activar}" style="color: #a33900;">{url_activar}</a>
+                <a href="{url_activar_h}" style="color: #a33900;">{url_activar_h}</a>
             </p>
         </div>
     </div>

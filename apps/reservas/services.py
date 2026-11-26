@@ -172,31 +172,36 @@ class ReservaService:
         if not nombre_cliente or not telefono_cliente or not email_cliente:
             raise ValidationError("Los datos del cliente (nombre, teléfono y correo) son obligatorios.")
 
-        with transaction.atomic():
-            reserva = cls.bloquear_bloque_concurrente(
-                bloque_id=bloque_id,
-                usuario=usuario,
-                tipo_reserva=tipo_reserva,
-                rut_cliente=rut_cliente,
-                nombre_cliente=nombre_cliente,
-                telefono_cliente=telefono_cliente,
-                email_cliente=email_cliente,
-                notas=notas,
-                validar_ventana=validar_ventana,
-                validar_unica_en_espera=validar_unica_en_espera,
-                request=request
+        try:
+            with transaction.atomic():
+                reserva = cls.bloquear_bloque_concurrente(
+                    bloque_id=bloque_id,
+                    usuario=usuario,
+                    tipo_reserva=tipo_reserva,
+                    rut_cliente=rut_cliente,
+                    nombre_cliente=nombre_cliente,
+                    telefono_cliente=telefono_cliente,
+                    email_cliente=email_cliente,
+                    notas=notas,
+                    validar_ventana=validar_ventana,
+                    validar_unica_en_espera=validar_unica_en_espera,
+                    request=request
+                )
+
+                if confirmar_pago_inmediato:
+                    reserva.estado_pago = Reserva.EstadoPago.PAGADO
+                    reserva.estado_reserva = Reserva.EstadoReserva.ACEPTADA
+                    reserva.save(update_fields=['estado_pago', 'estado_reserva', 'actualizado_en'])
+                    bloque = reserva.bloque
+                    bloque.estado = BloqueHorario.Estado.RESERVADO
+                    bloque.expiracion_bloqueo = None
+                    bloque.save(update_fields=['estado', 'expiracion_bloqueo', 'actualizado_en'])
+
+                return reserva
+        except OperationalError:
+            raise ReservaConflictError(
+                "Conflicto de concurrencia: El bloque horario se encuentra temporalmente retenido por otra transacción."
             )
-
-            if confirmar_pago_inmediato:
-                reserva.estado_pago = Reserva.EstadoPago.PAGADO
-                reserva.estado_reserva = Reserva.EstadoReserva.ACEPTADA
-                reserva.save(update_fields=['estado_pago', 'estado_reserva', 'actualizado_en'])
-                bloque = reserva.bloque
-                bloque.estado = BloqueHorario.Estado.RESERVADO
-                bloque.expiracion_bloqueo = None
-                bloque.save(update_fields=['estado', 'expiracion_bloqueo', 'actualizado_en'])
-
-            return reserva
 
     @staticmethod
     def resolver_reserva_admin(
@@ -216,12 +221,23 @@ class ReservaService:
             raise ValidationError("La decisión debe ser 'ACEPTADA' o 'DENEGADA'.")
 
         with transaction.atomic():
-            reserva = (
-                Reserva.objects
-                .select_for_update()
-                .select_related("bloque", "bloque__cancha", "bloque__cancha__complejo", "bloque__cancha__superficie")
-                .get(id=reserva_id)
-            )
+            try:
+                reserva = (
+                    Reserva.objects
+                    .select_for_update()
+                    .select_related(
+                        "bloque", "bloque__cancha", "bloque__cancha__complejo", "bloque__cancha__superficie"
+                    )
+                    .get(id=reserva_id)
+                )
+            except Reserva.DoesNotExist:
+                raise ValidationError("La reserva solicitada no existe.")
+
+            if reserva.estado_reserva != Reserva.EstadoReserva.EN_ESPERA:
+                raise ValidationError(
+                    "Esta reserva ya fue resuelta anteriormente y no puede volver a modificarse."
+                )
+
             bloque = BloqueHorario.objects.select_for_update().get(id=reserva.bloque_id)
 
             reserva.estado_reserva = decision
